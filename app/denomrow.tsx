@@ -16,12 +16,12 @@ export default function DenomRow({
 }) {
     const subtotal = d.value * qty;
     return (
-        <View className="flex items-center gap-3 bg-card rounded-2xl px-4 py-3.5 shadow-sm shadow-black/20">
+        <View className="flex flex-row bg-card justify-between items-center gap-3  rounded-2xl px-4 py-3.5 shadow-sm shadow-black/20">
             <View className="w-16">
                 <Text className="text-sm font-semibold text-foreground font-mono">{d.label}</Text>
                 <Text className="text-[10px] text-muted-foreground mt-0.5 capitalize">{d.type}</Text>
             </View>
-            <View className="flex-1 flex items-center justify-center gap-2">
+            <View className="flex flex-row  items-center justify-center gap-2">
                 <Pressable
                     onPress={() => onUpdate(d.id, -1)}
                     className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-foreground active:scale-90 transition-transform"
@@ -33,7 +33,7 @@ export default function DenomRow({
                     value={String(qty)}
                     onChangeText={(text) => onDirect(d.id, text)}
                     // className="w-14 h-9 rounded-xl bg-secondary border border-border text-center text-sm font-semibold font-mono"
-                    className="border w-14 h-9 px-2 rounded-xl border-border bg-secondary text-sm font-semibold font-mono  text-foreground"
+                    className="border w-15 h-9 px-2 rounded-xl border-border bg-secondary   text-sm font-semibold font-mono  text-foreground"
                 />
                 <Pressable
                     onPress={() => onUpdate(d.id, 1)}

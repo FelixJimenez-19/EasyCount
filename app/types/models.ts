@@ -8,10 +8,10 @@ export interface Denomination {
     active: boolean;
 }
 
-export interface ArcheoEntry {
+export interface Transaction {
     id: string;
     date: Date;
-    note: string;
     total: number;
-    breakdown: { label: string; value: number; qty: number; subtotal: number }[];
+    note: string;
+    // breakdown: { label: string; value: number; qty: number; subtotal: number }[];
 }

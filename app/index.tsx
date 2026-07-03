@@ -1,9 +1,10 @@
 import "@/global.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import About from "./about";
 import CatalogScreen from "./catalog-screen";
 
+import { initDatabase } from "@/src/database/database";
 import Header from "./components/header";
 import Home from "./home";
 import ReportScreen from "./report-screen";
@@ -25,6 +26,9 @@ export default function Index() {
         acerca: <About />,
     }[activeTab];
 
+    useEffect(() => {
+        initDatabase();
+    }, []);
     return (
         <View className="flex items-center justify-center   min-h-screen bg-background pt-10   ">
             <Header showReset={activeTab === "conteo" && hasValues} onReset={reset} />

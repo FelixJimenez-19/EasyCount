@@ -25,15 +25,15 @@ export default function CatalogScreen() {
     const bills = denoms.filter((d) => d.type === "billete");
     const coins = denoms.filter((d) => d.type === "moneda");
     return (
-        <View className="flex flex-col h-full">
-            <View className="px-5 pt-6 pb-4 flex items-center justify-between">
+        <View className="flex h-full">
+            <View className="px-5 pt-6 pb-4 flex flex-row items-center justify-between">
                 <View>
                     <Text className="text-xl font-semibold text-foreground">Catálogo</Text>
                     <Text className="text-xs text-muted-foreground mt-1">Denominaciones activas · Ecuador</Text>
                 </View>
                 <Pressable
                     onPress={() => setShowAddModal(true)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold"
+                    className="flex flex-row items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold"
                 >
                     <Plus size={14} />
                     <Text>Nueva</Text>
@@ -66,7 +66,7 @@ export default function CatalogScreen() {
                                                 newType === t ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
                                             }`}
                                         >
-                                            {t}
+                                            <Text>{t}</Text>
                                         </Pressable>
                                     ))}
                                 </View>

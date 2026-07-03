@@ -5,10 +5,10 @@ import { Denomination } from "./types/models";
 export default function CatalogSection({ title, items, onToggle }: { title: string; items: Denomination[]; onToggle: (id: string) => void }) {
     return (
         <View>
-            <Text className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-3 px-1">{title}</Text>
-            <View className="space-y-2">
+            <Text className="text-xs font-medium  text-muted-foreground uppercase tracking-widest mb-3 px-1">{title}</Text>
+            <View className="space-y-2 flex  gap-2">
                 {items.map((d) => (
-                    <View key={d.id} className="flex items-center justify-between bg-card rounded-2xl px-4 py-3.5 shadow-sm shadow-black/20">
+                    <View key={d.id} className="flex flex-row items-center justify-between bg-card rounded-2xl px-4 py-3.5 shadow-sm shadow-black/20">
                         <View>
                             <Text className="text-sm font-semibold text-foreground font-mono">{d.label}</Text>
                             <Text className="text-[10px] text-muted-foreground mt-0.5 capitalize">{d.type}</Text>

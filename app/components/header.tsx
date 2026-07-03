@@ -9,7 +9,7 @@ interface HeaderProps {
 
 export default function Header({ showReset, onReset }: HeaderProps) {
     return (
-        <View className="flex flex-row items-center top-0 justify-between  pt-3 w-full">
+        <View className="flex flex-row items-center  justify-between px-4 w-full">
             <View className="flex flex-row items-center gap-2.5">
                 <Logo size={32} />
                 <View>

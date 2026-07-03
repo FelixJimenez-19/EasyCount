@@ -26,42 +26,33 @@ export default function Index() {
     }[activeTab];
 
     return (
-        <View className="flex-1 items-center justify-center min-h-screen bg-background p-5 font-sans ">
+        <View className="flex items-center justify-center   min-h-screen bg-background pt-10   ">
             <Header showReset={activeTab === "conteo" && hasValues} onReset={reset} />
-            <View className="relative  rounded-xl flex flex-col  overflow-hidden">
-                {/* Screen content */}
-                <View className="flex-1 overflow-hidden relative">{screen}</View>
+            <View className="flex-1 overflow-hidden w-full px-4  relative">{screen}</View>
 
-                {/* Bottom tab bar */}
-                <View className="shrink-0 border-t border-border bg-card/80 backdrop-blur-md">
-                    <View className="flex flex-row items-center justify-around px-2 pt-2">
-                        {TABS.map(({ id, label, Icon }) => {
-                            const active = activeTab === id;
-                            return (
-                                <Pressable
-                                    key={id}
-                                    onPress={() => setActiveTab(id)}
-                                    className="flex flex-col items-center gap-1 py-1.5 px-4 rounded-2xl transition-all"
-                                >
-                                    <View
-                                        className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
-                                            active ? "bg-primary/15" : "bg-transparent"
-                                        }`}
-                                    >
-                                        <Icon size={22} className={`transition-colors ${active ? "text-primary" : "text-muted-foreground"}`} />
-                                    </View>
-                                    <Text
-                                        className={`text-[10px] font-medium leading-none transition-colors ${
-                                            active ? "text-primary" : "text-gray-200"
-                                        }`}
-                                    >
-                                        {label}
-                                    </Text>
-                                </Pressable>
-                            );
-                        })}
-                    </View>
-                </View>
+            {/* Bottom tab bar */}
+            <View className="flex-row shrink-0 border-t w-full border-border bg-card backdrop-blur-md justify-between px-4 pb-5">
+                {TABS.map(({ id, label, Icon }) => {
+                    const active = activeTab === id;
+                    return (
+                        <Pressable
+                            key={id}
+                            onPress={() => setActiveTab(id)}
+                            className="flex flex-col items-center gap-1 py-1.5 px-4  rounded-2xl  transition-all"
+                        >
+                            <View
+                                className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
+                                    active ? "bg-primary/15" : "bg-transparent"
+                                }`}
+                            >
+                                <Icon size={22} className={`transition-colors ${active ? "text-primary" : "text-foreground   "}`} />
+                            </View>
+                            <Text className={`text-[10px] font-medium leading-none transition-colors ${active ? "text-primary" : "text-foreground"}`}>
+                                {label}
+                            </Text>
+                        </Pressable>
+                    );
+                })}
             </View>
         </View>
     );

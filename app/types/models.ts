@@ -1,10 +1,10 @@
 export type Tab = "conteo" | "reportes" | "catalogo" | "acerca";
 
 export interface Denomination {
-    id: string;
+    id: number;
     label: string;
-    value: number;
-    type: "billete" | "moneda";
+    valor: number;
+    tipo: string;
     active: boolean;
 }
 
@@ -14,4 +14,9 @@ export interface Transaction {
     total: number;
     note: string;
     // breakdown: { label: string; value: number; qty: number; subtotal: number }[];
+}
+export interface TransactionDenomination {
+    id_denomination: number;
+    quantity: number;
+    subtotal: number;
 }

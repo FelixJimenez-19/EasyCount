@@ -4,26 +4,26 @@ import { Minus, Plus } from "lucide-react-native";
 import { Pressable, Text, TextInput, View } from "react-native";
 
 export default function DenomRow({
-    d,
+    denomination,
     qty,
     onUpdate,
     onDirect,
 }: {
-    d: Denomination;
+    denomination: Denomination;
     qty: number;
-    onUpdate: (id: string, delta: number) => void;
-    onDirect: (id: string, val: string) => void;
+    onUpdate: (id: number, delta: number) => void;
+    onDirect: (id: number, val: string) => void;
 }) {
-    const subtotal = d.value * qty;
+    const subtotal = denomination.valor * qty;
     return (
         <View className="flex flex-row justify-between items-center gap-3 bg-card rounded-2xl px-4 py-3.5 shadow-sm shadow-black/20">
             <View className="w-16">
-                <Text className="text-sm font-semibold text-foreground font-mono">{d.label}</Text>
-                <Text className="text-[10px] text-muted-foreground mt-0.5 capitalize">{d.type}</Text>
+                <Text className="text-sm font-semibold text-foreground font-mono">{denomination.valor}</Text>
+                <Text className="text-[10px] text-muted-foreground mt-0.5 capitalize">{denomination.tipo}</Text>
             </View>
             <View className="flex-row flex items-center justify-between gap-2">
                 <Pressable
-                    onPress={() => onUpdate(d.id, -1)}
+                    onPress={() => onUpdate(denomination.id, -1)}
                     className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-foreground active:opacity-80"
                 >
                     <Minus size={14} />
@@ -31,11 +31,11 @@ export default function DenomRow({
                 <TextInput
                     keyboardType="numeric"
                     value={qty.toString()}
-                    onChangeText={(number) => onDirect(d.id, number)}
+                    onChangeText={(number) => onDirect(denomination.id, number)}
                     className="border w-14 h-9 px-2 rounded-xl border-border bg-secondary text-sm font-semibold font-mono  text-foreground"
                 />
                 <Pressable
-                    onPress={() => onUpdate(d.id, 1)}
+                    onPress={() => onUpdate(denomination.id, 1)}
                     className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground active:opacity-80"
                 >
                     <Plus size={14} />

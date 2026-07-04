@@ -1,50 +1,78 @@
+import { CountService } from "@/src/services/count-service";
 import { Save } from "lucide-react-native";
-import { Dispatch, SetStateAction, useCallback, useState } from "react";
-import { Pressable, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Dispatch, SetStateAction, useState } from "react";
+import { Alert, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import DenomRow from "./denomrow";
-import { fmt, INITIAL_DENOMINATIONS } from "./utilities/utilities";
+import { Denomination, TransactionDenomination } from "./types/models";
+import { fmt } from "./utilities/utilities";
 
 interface HomeProps {
+    denominaciones: Denomination[];
+    cantidades: Record<number, number>;
+    setCantidades: Dispatch<SetStateAction<Record<number, number>>>;
+    // observacion: string;
+    // setObservacion: Dispatch<SetStateAction<string>>;
     grandTotal: number;
-    qtys: Record<string, number>;
-    setQtys: Dispatch<SetStateAction<Record<string, number>>>;
 }
 
-export default function Home({ grandTotal, qtys, setQtys }: HomeProps) {
-    const activeDenoms = INITIAL_DENOMINATIONS.filter((d) => d.active);
+export default function Home({ denominaciones, cantidades, setCantidades, grandTotal }: HomeProps) {
+    const [observacion, setObservacion] = useState("");
     const [showModal, setShowModal] = useState(false);
-    const [note, setNote] = useState("");
     const [saved, setSaved] = useState(false);
 
-    const update = useCallback(
-        (id: string, delta: number) => {
-            setQtys((prev) => ({ ...prev, [id]: Math.max(0, (prev[id] ?? 0) + delta) }));
-        },
-        [setQtys]
-    );
+    const bills = denominaciones.filter((d) => d.tipo === "Billete");
+    const coins = denominaciones.filter((d) => d.tipo === "Moneda");
 
-    const setDirect = useCallback(
-        (id: string, val: string) => {
-            const n = parseInt(val, 10);
-            setQtys((prev) => ({ ...prev, [id]: isNaN(n) || n < 0 ? 0 : n }));
-        },
-        [setQtys]
-    );
-
-    const handleSave = () => {
-        setSaved(true);
-        setShowModal(false);
-        setNote("");
-        setTimeout(() => setSaved(false), 2500);
+    // Lógica controlada para botones + y - (onUpdate)
+    const handleUpdateCantidad = (id: number, valor: number) => {
+        setCantidades((prev) => {
+            const actual = prev[id] || 0;
+            const nueva = actual + valor;
+            return { ...prev, [id]: nueva < 0 ? 0 : nueva }; // Evitamos negativos
+        });
     };
 
-    const bills = activeDenoms.filter((d) => d.type === "billete");
-    const coins = activeDenoms.filter((d) => d.type === "moneda");
+    // Lógica para el input de texto directo (onDirect)
+    const handleInputChange = (id: number, texto: string) => {
+        const numeroLimpio = texto.replace(/[^0-9]/g, "");
+        const valorNumerico = numeroLimpio === "" ? 0 : parseInt(numeroLimpio, 10);
+        setCantidades((prev) => ({ ...prev, [id]: valorNumerico }));
+    };
+
+    const calcularSubtotal = (id: number, valor: number) => (cantidades[id] || 0) * valor;
+
+    // Acción de persistencia definitiva hacia el Backend local
+    const handleGuardarCierre = () => {
+        if (grandTotal === 0) {
+            Alert.alert("Arqueo Vacío", "No puedes guardar un arqueo con saldo de $0.00");
+            return;
+        }
+
+        // Filtramos solo las monedas que el usuario efectivamente contó
+        const desglosesAInsertar: TransactionDenomination[] = denominaciones
+            .filter((d) => (cantidades[d.id] || 0) > 0)
+            .map((d) => ({
+                id_denomination: d.id,
+                quantity: cantidades[d.id],
+                subtotal: calcularSubtotal(d.id, d.valor),
+            }));
+
+        const exito = CountService.saveTransaction(grandTotal, observacion || "Sin observación", desglosesAInsertar);
+
+        setShowModal(false);
+
+        if (exito) {
+            setObservacion("");
+            setCantidades((prev) => Object.fromEntries(Object.keys(prev).map((key) => [Number(key), 0])));
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2500);
+        } else {
+            Alert.alert("Error", "Hubo un problema al intentar escribir en el almacenamiento del dispositivo.");
+        }
+    };
 
     return (
         <View className="flex h-full  flex-col  ">
-            {/* Header */}
-
             {/* Scrollable list */}
             <ScrollView className="flex-1 pt-4 " showsVerticalScrollIndicator={false}>
                 {bills.length > 0 && (
@@ -52,7 +80,13 @@ export default function Home({ grandTotal, qtys, setQtys }: HomeProps) {
                         <Text className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-3 px-1">Billetes</Text>
                         <View className="space-y-2 gap-2 ">
                             {bills.map((d) => (
-                                <DenomRow key={d.id} d={d} qty={qtys[d.id] ?? 0} onUpdate={update} onDirect={setDirect} />
+                                <DenomRow
+                                    key={d.id}
+                                    denomination={d}
+                                    qty={cantidades[d.id] ?? 0}
+                                    onUpdate={handleUpdateCantidad}
+                                    onDirect={handleInputChange}
+                                />
                             ))}
                         </View>
                     </View>
@@ -62,7 +96,13 @@ export default function Home({ grandTotal, qtys, setQtys }: HomeProps) {
                         <Text className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-3 px-1">Monedas</Text>
                         <View className="space-y-2 gap-2">
                             {coins.map((d) => (
-                                <DenomRow key={d.id} d={d} qty={qtys[d.id] ?? 0} onUpdate={update} onDirect={setDirect} />
+                                <DenomRow
+                                    key={d.id}
+                                    denomination={d}
+                                    qty={cantidades[d.id] ?? 0}
+                                    onUpdate={handleUpdateCantidad}
+                                    onDirect={handleInputChange}
+                                />
                             ))}
                         </View>
                     </View>
@@ -104,12 +144,13 @@ export default function Home({ grandTotal, qtys, setQtys }: HomeProps) {
                         <Text className="text-sm text-muted-foreground mb-4">
                             Total: <Text className="text-primary font-semibold">${fmt(grandTotal)}</Text>
                         </Text>
-                        <Text className="block text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Observación (opcional)</Text>
-                        <textarea
-                            value={note}
-                            onChange={(e) => setNote(e.target.value)}
+                        <Text className="block text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Observación opcional</Text>
+                        <TextInput
+                            value={observacion}
+                            onChange={(e) => setObservacion(e.nativeEvent.text)}
+                            multiline
                             placeholder="Ej: Cierre de caja matutino..."
-                            rows={3}
+                            numberOfLines={3}
                             className="w-full bg-secondary rounded-2xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground resize-none outline-none focus:ring-2 focus:ring-primary/40 border border-border"
                         />
                         <View className="flex flex-row gap-3 mt-4">
@@ -120,7 +161,7 @@ export default function Home({ grandTotal, qtys, setQtys }: HomeProps) {
                                 <Text>Cancelar</Text>
                             </Pressable>
                             <Pressable
-                                onPress={handleSave}
+                                onPress={handleGuardarCierre}
                                 className="flex flex-row grow-2 py-3.5 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm  items-center justify-center gap-2"
                             >
                                 <Save size={16} />

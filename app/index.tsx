@@ -1,34 +1,53 @@
 import "@/global.css";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import About from "./about";
 import CatalogScreen from "./catalog-screen";
 
 import { initDatabase } from "@/src/database/database";
+import { CountService } from "@/src/services/count-service";
 import Header from "./components/header";
 import Home from "./home";
 import ReportScreen from "./report-screen";
-import { Tab } from "./types/models";
-import { INITIAL_DENOMINATIONS, TABS } from "./utilities/utilities";
+import { Denomination, Tab } from "./types/models";
+import { TABS } from "./utilities/utilities";
 
 export default function Index() {
-    const activeDenoms = INITIAL_DENOMINATIONS.filter((d) => d.active);
-    const [qtys, setQtys] = useState<Record<string, number>>(() => Object.fromEntries(activeDenoms.map((d) => [d.id, 0])));
-    const reset = () => setQtys(Object.fromEntries(activeDenoms.map((d) => [d.id, 0])));
     const [activeTab, setActiveTab] = useState<Tab>("conteo");
-    const grandTotal = activeDenoms.reduce((sum, d) => sum + d.value * (qtys[d.id] ?? 0), 0);
-    const hasValues = Object.values(qtys).some((qty) => qty > 0);
+    const [denominaciones, setDenominaciones] = useState<Denomination[]>([]);
+    const [cantidades, setCantidades] = useState<Record<number, number>>({});
+    // const [observacion, setObservacion] = useState("");
+
+    const cargarDenominaciones = useCallback(() => {
+        const datos = CountService.getDenominaciones();
+        setDenominaciones(datos);
+        setCantidades(Object.fromEntries(datos.map((d) => [d.id, 0])));
+    }, []);
+
+    useEffect(() => {
+        initDatabase().then(cargarDenominaciones);
+    }, [cargarDenominaciones]);
+
+    const grandTotal = denominaciones.reduce((sum, d) => sum + d.valor * (cantidades[d.id] ?? 0), 0);
+    const hasValues = Object.values(cantidades).some((qty) => qty > 0);
+    const reset = () => setCantidades(Object.fromEntries(denominaciones.map((d) => [d.id, 0])));
 
     const screen = {
-        conteo: <Home grandTotal={grandTotal} qtys={qtys} setQtys={setQtys} />,
+        conteo: (
+            <Home
+                denominaciones={denominaciones}
+                cantidades={cantidades}
+                setCantidades={setCantidades}
+                // observacion={observacion}
+                // setObservacion={setObservacion}
+                grandTotal={grandTotal}
+            />
+        ),
         reportes: <ReportScreen />,
         catalogo: <CatalogScreen />,
         acerca: <About />,
     }[activeTab];
 
-    useEffect(() => {
-        initDatabase();
-    }, []);
     return (
         <View className="flex items-center justify-center   min-h-screen bg-background pt-10   ">
             <Header showReset={activeTab === "conteo" && hasValues} onReset={reset} />
@@ -49,7 +68,7 @@ export default function Index() {
                                     active ? "bg-primary/15" : "bg-transparent"
                                 }`}
                             >
-                                <Icon size={22} className={`transition-colors ${active ? "text-primary" : "text-foreground   "}`} />
+                                <Icon size={22} className={`transition-colors ${active ? "text-primary" : "text-foreground    "}`} />
                             </View>
                             <Text className={`text-[10px] font-medium leading-none transition-colors ${active ? "text-primary" : "text-foreground"}`}>
                                 {label}

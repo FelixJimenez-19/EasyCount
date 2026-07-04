@@ -1,19 +1,5 @@
-import { Denomination, Transaction } from "@/app/types/models";
+import { Denomination, TransactionDenomination } from "@/app/types/models";
 import { db } from "../database/database";
-
-// 1. Interfaces de TypeScript para garantizar el tipado estático seguro
-// export interface Denominacion {
-//     id_denominacion: number;
-//     valor: number;
-//     tipo: string;
-//     image_url: string;
-// }
-
-export interface DetalleConteo {
-    id_denominacion: number;
-    cantidad: number;
-    subtotal: number;
-}
 
 /**
  * Servicio encargado de gestionar la lógica de datos de los Arqueos
@@ -36,7 +22,7 @@ export const CountService = {
     /**
      * Guarda un Arqueo Completo (Cabecera + Detalles) aplicando Transaccionalidad ACID
      */
-    saveTransaction: (montoTotal: number, observacion: string, desgloses: Transaction[]): boolean => {
+    saveTransaction: (montoTotal: number, observacion: string, desgloses: TransactionDenomination[]): boolean => {
         try {
             // 1. Insertar la Cabecera en la tabla transaccion
             const fechaActual = new Date().toISOString();
@@ -56,7 +42,7 @@ export const CountService = {
            (id_transaccion, id_denominacion, cantidad, subtotal) 
            VALUES (?, ?, ?, ?);`,
 
-                    [idTransaccion, item.id, item.total, item.total]
+                    [idTransaccion, item.id_denomination, item.quantity, item.subtotal]
                     // Linea por corregir
                 );
             }
@@ -72,7 +58,7 @@ export const CountService = {
     /**
      * Ejecuta el INNER JOIN triple que planeamos para recuperar el historial desglosado
      */
-    getHistorialCompleto: () => {
+    getTransaction: () => {
         try {
             const query = `
         SELECT 

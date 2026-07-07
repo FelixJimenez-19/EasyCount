@@ -1,7 +1,34 @@
 import { BookOpen, Calculator, FileText, Info } from "lucide-react-native";
-import { Tab } from "../types/models";
+import { Tab, Transaction, TransactionRow } from "../types/models";
 
 export const fmt = (n: number) => n.toLocaleString("es-EC", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/**
+ * Agrupa las filas planas del INNER JOIN (una fila por denominación) en Transacciones con su desglose
+ */
+export const mapTransactionRows = (rows: TransactionRow[]): Transaction[] => {
+    const transactions = new Map<number, Transaction>();
+
+    for (const row of rows) {
+        if (!transactions.has(row.id_transaccion)) {
+            transactions.set(row.id_transaccion, {
+                id: String(row.id_transaccion),
+                date: new Date(row.fecha),
+                total: row.total_general,
+                note: row.observacion,
+                breakdown: [],
+            });
+        }
+        transactions.get(row.id_transaccion)!.breakdown.push({
+            label: `$${fmt(row.valor)}`,
+            value: row.valor,
+            qty: row.cantidad,
+            subtotal: row.subtotal,
+        });
+    }
+
+    return Array.from(transactions.values());
+};
 
 export const fmtDate = (d: Date) =>
     d.toLocaleDateString("es-EC", { day: "2-digit", month: "short", year: "numeric" }) +

@@ -15,9 +15,18 @@ export const initDatabase = async (): Promise<void> => {
         id_denominacion INTEGER PRIMARY KEY AUTOINCREMENT,
         valor DECIMAL(10,2) NOT NULL,
         tipo VARCHAR(50) NOT NULL,
-        image_url VARCHAR(255) NULL
+        image_url VARCHAR(255) NULL,
+        activo BOOLEAN NOT NULL DEFAULT 1
       );
     `);
+
+        // Migración: si la tabla ya existía de una versión anterior sin la columna "activo", la agregamos
+        const columnas = db.getAllSync<{ name: string }>("PRAGMA table_info(denominacion);");
+        const tieneActivo = columnas.some((c) => c.name === "activo");
+        if (!tieneActivo) {
+            db.execSync("ALTER TABLE denominacion ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1;");
+            console.log("🔧 Columna 'activo' agregada a la tabla denominacion.");
+        }
 
         db.execSync(`
       CREATE TABLE IF NOT EXISTS transaccion (

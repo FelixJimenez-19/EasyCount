@@ -1,4 +1,4 @@
-import { Denomination, TransactionDenomination } from "@/app/types/models";
+import { Denomination, TransactionDenomination, TransactionRow } from "@/app/types/models";
 import { db } from "../database/database";
 
 /**
@@ -6,16 +6,60 @@ import { db } from "../database/database";
  */
 export const CountService = {
     /**
-     * Trae todas las denominaciones oficiales activas desde la BD
+     * Trae todas las denominaciones desde la BD, mapeando las columnas al shape de Denomination
      */
     getDenominaciones: (): Denomination[] => {
         try {
-            // Usamos el método sincrónico o asincrónico para obtener las filas mapeadas
-            const rows = db.getAllSync<Denomination>("SELECT * FROM denominacion ORDER BY tipo DESC, valor DESC;");
-            return rows;
+            const rows = db.getAllSync<{ id_denominacion: number; valor: number; tipo: string; activo: number }>(
+                "SELECT id_denominacion, valor, tipo, activo FROM denominacion ORDER BY tipo DESC, valor DESC;"
+            );
+            return rows.map((r) => ({
+                id: r.id_denominacion,
+                label: `$${r.valor.toFixed(2)}`,
+                valor: r.valor,
+                tipo: r.tipo,
+                active: r.activo === 1,
+            }));
         } catch (error) {
             console.error("❌ Error al obtener denominaciones:", error);
             return [];
+        }
+    },
+
+    /**
+     * Inserta una nueva denominación personalizada y devuelve el registro creado
+     */
+    addDenominacion: (valor: number, tipo: string, activo: boolean): Denomination | null => {
+        try {
+            const result = db.runSync("INSERT INTO denominacion (valor, tipo, image_url, activo) VALUES (?, ?, ?, ?);", [
+                valor,
+                tipo,
+                "",
+                activo ? 1 : 0,
+            ]);
+            return {
+                id: result.lastInsertRowId,
+                label: `$${valor.toFixed(2)}`,
+                valor,
+                tipo,
+                active: activo,
+            };
+        } catch (error) {
+            console.error("❌ Error al agregar denominación:", error);
+            return null;
+        }
+    },
+
+    /**
+     * Activa o desactiva una denominación existente (toggle desde el catálogo)
+     */
+    toggleDenominacion: (id: number, active: boolean): boolean => {
+        try {
+            db.runSync("UPDATE denominacion SET activo = ? WHERE id_denominacion = ?;", [active ? 1 : 0, id]);
+            return true;
+        } catch (error) {
+            console.error("❌ Error al actualizar el estado de la denominación:", error);
+            return false;
         }
     },
 
@@ -58,10 +102,10 @@ export const CountService = {
     /**
      * Ejecuta el INNER JOIN triple que planeamos para recuperar el historial desglosado
      */
-    getTransaction: () => {
+    getTransaction: (): TransactionRow[] => {
         try {
             const query = `
-        SELECT 
+        SELECT
           t.id_transaccion, t.fecha, t.monto as total_general, t.observacion,
           td.cantidad, td.subtotal,
           d.valor, d.tipo
@@ -70,7 +114,7 @@ export const CountService = {
         INNER JOIN denominacion d ON td.id_denominacion = d.id_denominacion
         ORDER BY t.fecha DESC;
       `;
-            return db.getAllSync(query);
+            return db.getAllSync<TransactionRow>(query);
         } catch (error) {
             console.error("❌ Error al consultar historial completo:", error);
             return [];

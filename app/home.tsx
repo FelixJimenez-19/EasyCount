@@ -1,7 +1,8 @@
 import { CountService } from "@/src/services/count-service";
+import { BlurView } from "expo-blur";
 import { Save } from "lucide-react-native";
 import { Dispatch, SetStateAction, useState } from "react";
-import { Alert, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import DenomRow from "./denomrow";
 import { Denomination, TransactionDenomination } from "./types/models";
 import { fmt } from "./utilities/utilities";
@@ -70,11 +71,12 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
             Alert.alert("Error", "Hubo un problema al intentar escribir en el almacenamiento del dispositivo.");
         }
     };
-
+    const colot_cutton = "#0f172a";
+    console.log("actualizando", handleUpdateCantidad);
     return (
         <View className="flex h-full  flex-col  ">
             {/* Scrollable list */}
-            <ScrollView className="flex-1 pt-4 " showsVerticalScrollIndicator={false}>
+            <ScrollView className="flex-1 mx-4 pt-4 " showsVerticalScrollIndicator={false}>
                 {bills.length > 0 && (
                     <View>
                         <Text className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-3 px-1">Billetes</Text>
@@ -111,11 +113,11 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
             </ScrollView>
 
             {/* Sticky footer */}
-            <View className="px-4 pb-4 pt-3 border-t  border-border ">
+            <View className="px-4 pb-4 pt-3 border-t border-border ">
                 {saved && (
                     <View className="mb-3 px-4 py-2.5 rounded-2xl bg-primary/10 border border-primary/20 flex items-center gap-2">
                         <View className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                        <Text className="text-primary text-sm font-medium">Arqueo guardado correctamente</Text>
+                        <Text className="text-primary text-sm font-medium">Conteo guardado correctamente</Text>
                     </View>
                 )}
                 <View className="flex flex-row items-baseline justify-between mb-3 px-1 ">
@@ -128,7 +130,7 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                 >
                     <Save size={18} />
 
-                    <Text>Guardar Arqueo</Text>
+                    <Text>Guardar Conteo</Text>
                 </Pressable>
             </View>
 
@@ -138,7 +140,13 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                     className="absolute inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
                     onPress={() => setShowModal(false)}
                 >
-                    <TouchableOpacity className="w-full bg-card rounded-t-3xl p-6 pb-8 shadow-2xl" onPress={(e) => e.stopPropagation()}>
+                    <BlurView
+                        intensity={40} // Puedes subirlo a 50 o 60 si quieres que se note aún más borroso
+                        tint="dark" // Aplica el tinte oscuro premium estilo iOS
+                        experimentalBlurMethod="dimezisBlurView"
+                        style={StyleSheet.absoluteFill}
+                    />
+                    <TouchableOpacity className="w-full mt-auto bg-card rounded-t-3xl p-6 pb-8 shadow-2xl" onPress={(e) => e.stopPropagation()}>
                         <View className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
                         <Text className="text-lg font-semibold text-foreground mb-1">Guardar Conteo</Text>
                         <Text className="text-sm text-muted-foreground mb-4">
@@ -156,16 +164,16 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                         <View className="flex flex-row gap-3 mt-4">
                             <Pressable
                                 onPress={() => setShowModal(false)}
-                                className="flex-1 py-3.5 rounded-2xl border items-center text-center border-border text-muted-foreground font-medium text-sm"
+                                className="flex-1 py-3.5 rounded-2xl border items-center text-center border-border "
                             >
-                                <Text>Cancelar</Text>
+                                <Text className="text-muted-foreground font-medium text-sm">Cancelar</Text>
                             </Pressable>
                             <Pressable
                                 onPress={handleGuardarCierre}
-                                className="flex flex-row grow-2 py-3.5 rounded-2xl bg-primary text-primary-foreground font-semibold text-sm  items-center justify-center gap-2"
+                                className="flex flex-row grow-2 py-3.5 rounded-2xl bg-primary items-center justify-center gap-2"
                             >
-                                <Save size={16} />
-                                <Text>Confirmar</Text>
+                                <Save color={colot_cutton} size={16} />
+                                <Text className="text-primary-foreground font-semibold text-sm">Confirmar</Text>
                             </Pressable>
                         </View>
                     </TouchableOpacity>

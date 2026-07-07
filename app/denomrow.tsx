@@ -32,7 +32,7 @@ export default function DenomRow({
                     keyboardType="numeric"
                     value={qty.toString()}
                     onChangeText={(number) => onDirect(denomination.id, number)}
-                    className="border w-14 h-9 px-2 rounded-xl border-border bg-secondary text-sm font-semibold font-mono  text-foreground"
+                    className="border w-14  px-2 rounded-xl border-border bg-secondary text-sm font-semibold font-mono  text-foreground"
                 />
                 <Pressable
                     onPress={() => onUpdate(denomination.id, 1)}

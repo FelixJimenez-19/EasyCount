@@ -27,7 +27,7 @@ const handleEmailPress = async () => {
             Alert.alert("Error", "No se encontró una aplicación de correo configurada en este dispositivo.");
         }
     } catch (error) {
-        Alert.alert("Error", "No se pudo abrir el correo electrónico.");
+        Alert.alert("Error", "No se pudo abrir el correo electrónico." + error);
     }
 };
 
@@ -49,7 +49,7 @@ export default function About() {
                 </View>
                 <View className="bg-card rounded-2xl p-5 shadow-sm shadow-black/20">
                     <View className="flex-row items-center gap-x-2 mb-4">
-                        <BookOpen size={16} className="text-primary" />
+                        <BookOpen size={16} color="#4ade80" />
                         <Text className="text-sm font-semibold text-foreground">Guía rápida de uso</Text>
                     </View>
                     <View className="gap-y-3">
@@ -73,7 +73,7 @@ export default function About() {
 
                 <View className="bg-card rounded-2xl p-5 shadow-sm shadow-black/20">
                     <View className="flex-row items-center gap-x-2 mb-4">
-                        <Info size={16} className="text-primary" />
+                        <Info size={16} color="#4ade80" />
                         <Text className="text-sm font-semibold text-foreground">Créditos</Text>
                     </View>
 
@@ -88,7 +88,7 @@ export default function About() {
                 </View>
                 <Pressable className="w-full bg-card rounded-2xl p-4 shadow-sm shadow-black/20 flex-row items-center gap-x-3 active:opacity-80">
                     <View className="w-10 h-10 rounded-xl bg-primary/10 items-center justify-center">
-                        <Mail size={18} className="text-primary" />
+                        <Mail size={18} color="#4ade80" />
                     </View>
                     <Pressable className="flex-1" onPress={handleEmailPress}>
                         <Text className="text-sm font-medium text-foreground">Soporte técnico</Text>

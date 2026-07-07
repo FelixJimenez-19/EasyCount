@@ -18,6 +18,7 @@ export default function Index() {
     const [cantidades, setCantidades] = useState<Record<number, number>>({});
     // const [observacion, setObservacion] = useState("");
 
+    // console.log(denominaciones);
     const cargarDenominaciones = useCallback(() => {
         const datos = CountService.getDenominaciones();
         setDenominaciones(datos);
@@ -32,6 +33,9 @@ export default function Index() {
     const hasValues = Object.values(cantidades).some((qty) => qty > 0);
     const reset = () => setCantidades(Object.fromEntries(denominaciones.map((d) => [d.id, 0])));
 
+    const primary = "#10b981";
+    const foreground = "#fff";
+
     const screen = {
         conteo: (
             <Home
@@ -44,14 +48,14 @@ export default function Index() {
             />
         ),
         reportes: <ReportScreen />,
-        catalogo: <CatalogScreen />,
+        catalogo: <CatalogScreen denominaciones={denominaciones} />,
         acerca: <About />,
     }[activeTab];
 
     return (
         <View className="flex items-center justify-center   min-h-screen bg-background pt-10   ">
             <Header showReset={activeTab === "conteo" && hasValues} onReset={reset} />
-            <View className="flex-1 overflow-hidden w-full px-4  relative">{screen}</View>
+            <View className="flex-1 overflow-hidden w-full   relative">{screen}</View>
 
             {/* Bottom tab bar */}
             <View className="flex-row shrink-0 border-t w-full border-border bg-card backdrop-blur-md justify-between px-4 pb-5">
@@ -68,7 +72,7 @@ export default function Index() {
                                     active ? "bg-primary/15" : "bg-transparent"
                                 }`}
                             >
-                                <Icon size={22} className={`transition-colors ${active ? "text-primary" : "text-foreground    "}`} />
+                                <Icon size={22} className={`transition-colors  `} color={active ? primary : foreground} />
                             </View>
                             <Text className={`text-[10px] font-medium leading-none transition-colors ${active ? "text-primary" : "text-foreground"}`}>
                                 {label}

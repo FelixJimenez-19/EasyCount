@@ -1,16 +1,9 @@
 import * as SQLite from "expo-sqlite";
 
-// Abrimos o creamos el archivo físico de la base de datos en el almacenamiento interno del móvil
 export const db = SQLite.openDatabaseSync("easycount.db");
 
-/**
- * Inicializa las tablas de la base de datos si no existen
- * Respetando la nomenclatura de tu Diagrama Entidad-Relación
- */
 export const initDatabase = async (): Promise<void> => {
     try {
-        // 1. Creación de la tabla maestra de Denominaciones (Billetes y Monedas de que queremos registrar ps)
-
         db.execSync(`
       CREATE TABLE IF NOT EXISTS denomination (
         id_denomination INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,19 +36,14 @@ export const initDatabase = async (): Promise<void> => {
 
         console.log(" Correct Create Tables");
 
-        // Ejecutamos el pre-llenado de las monedas una vez creadas las tablas
         await seedDenominaciones();
     } catch (error) {
         console.error("Error to start DB:", error);
     }
 };
 
-/**
- * Inserta el catálogo de monedas y billetes oficiales de Ecuador si la tabla está vacía (Seeding)
- */
 const seedDenominaciones = async (): Promise<void> => {
     try {
-        // Verificamos si ya existen registros previos para no duplicar datos
         const result: any = db.getFirstSync("SELECT COUNT(*) as count FROM denomination;");
 
         if (result && result.count === 0) {
@@ -77,7 +65,6 @@ const seedDenominaciones = async (): Promise<void> => {
                 { value: 100.0, type: "Billete", boolean: true },
             ];
 
-            // Preparamos la inserción masiva de datos en bloque
             for (const item of startvalue) {
                 db.runSync("INSERT INTO denomination (value, type, active) VALUES (?, ?, ?);", [item.value, item.type, item.boolean]);
             }

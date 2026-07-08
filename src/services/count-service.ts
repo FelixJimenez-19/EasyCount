@@ -1,13 +1,7 @@
 import { Denomination, TransactionDenomination, TransactionRow } from "@/app/types/models";
 import { db } from "../database/database";
 
-/**
- * Servicio encargado de gestionar la lógica de datos de los Arqueos
- */
 export const CountService = {
-    /**
-     * Trae todas las denominaciones desde la BD, mapeando las columnas al shape de Denomination
-     */
     getDenominaciones: (): Denomination[] => {
         try {
             const rows = db.getAllSync<{ id_denomination: number; value: number; type: string; active: number }>(
@@ -26,9 +20,6 @@ export const CountService = {
         }
     },
 
-    /**
-     * Inserta una nueva denominación personalizada y devuelve el registro creado
-     */
     addDenominacion: (value: number, type: string, active: boolean): Denomination | null => {
         try {
             const result = db.runSync("INSERT INTO denomination (value, type, active) VALUES (?, ?, ?);", [value, type, active ? 1 : 0]);
@@ -45,9 +36,6 @@ export const CountService = {
         }
     },
 
-    /**
-     * Activa o desactiva una denominación existente (toggle desde el catálogo)
-     */
     toggleDenominacion: (id: number, active: boolean): boolean => {
         try {
             db.runSync("UPDATE denomination SET active = ? WHERE id_denomination = ?;", [active ? 1 : 0, id]);
@@ -58,12 +46,8 @@ export const CountService = {
         }
     },
 
-    /**
-     * Guarda un Arqueo Completo (Cabecera + Detalles) aplicando Transaccionalidad ACID
-     */
     saveTransaction: (montoTotal: number, observacion: string, desgloses: TransactionDenomination[]): boolean => {
         try {
-            // 1. Insertar la Cabecera en la tabla transaccion
             const fechaActual = new Date().toISOString();
             const resultTransaccion = db.runSync("INSERT INTO transactionn (date, total, observation) VALUES (?, ?, ?);", [
                 fechaActual,
@@ -71,10 +55,8 @@ export const CountService = {
                 observacion,
             ]);
 
-            // Obtenemos el ID autoincremental que la BD le asignó a este arqueo específico
             const idTransaccion = resultTransaccion.lastInsertRowId;
 
-            // 2. Insertar cada fila del desglose en la tabla intermedia
             for (const item of desgloses) {
                 db.runSync(
                     `INSERT INTO transactionn_denomination 
@@ -82,7 +64,6 @@ export const CountService = {
            VALUES (?, ?, ?, ?);`,
 
                     [idTransaccion, item.id_denomination, item.quantity, item.subtotal]
-                    // Linea por corregir
                 );
             }
 
@@ -94,9 +75,6 @@ export const CountService = {
         }
     },
 
-    /**
-     * Ejecuta el INNER JOIN triple que planeamos para recuperar el historial desglosado
-     */
     getTransaction: (): TransactionRow[] => {
         try {
             const query = `

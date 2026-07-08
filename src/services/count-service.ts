@@ -10,18 +10,18 @@ export const CountService = {
      */
     getDenominaciones: (): Denomination[] => {
         try {
-            const rows = db.getAllSync<{ id_denominacion: number; valor: number; tipo: string; activo: number }>(
-                "SELECT id_denominacion, valor, tipo, activo FROM denominacion ORDER BY tipo DESC, valor DESC;"
+            const rows = db.getAllSync<{ id_denomination: number; value: number; type: string; active: number }>(
+                "SELECT id_denomination, value, type, active FROM denomination ORDER BY type DESC, value DESC;"
             );
             return rows.map((r) => ({
-                id: r.id_denominacion,
-                label: `$${r.valor.toFixed(2)}`,
-                valor: r.valor,
-                tipo: r.tipo,
-                active: r.activo === 1,
+                id_denomination: r.id_denomination,
+                label: `$${r.value.toFixed(2)}`,
+                value: r.value,
+                type: r.type,
+                active: r.active === 1,
             }));
         } catch (error) {
-            console.error("❌ Error al obtener denominaciones:", error);
+            console.error("Error to get Denominations:", error);
             return [];
         }
     },
@@ -29,23 +29,18 @@ export const CountService = {
     /**
      * Inserta una nueva denominación personalizada y devuelve el registro creado
      */
-    addDenominacion: (valor: number, tipo: string, activo: boolean): Denomination | null => {
+    addDenominacion: (value: number, type: string, active: boolean): Denomination | null => {
         try {
-            const result = db.runSync("INSERT INTO denominacion (valor, tipo, image_url, activo) VALUES (?, ?, ?, ?);", [
-                valor,
-                tipo,
-                "",
-                activo ? 1 : 0,
-            ]);
+            const result = db.runSync("INSERT INTO denomination (value, type, active) VALUES (?, ?, ?);", [value, type, active ? 1 : 0]);
             return {
-                id: result.lastInsertRowId,
-                label: `$${valor.toFixed(2)}`,
-                valor,
-                tipo,
-                active: activo,
+                id_denomination: result.lastInsertRowId,
+                label: `$${value.toFixed(2)}`,
+                value: value,
+                type: type,
+                active: active,
             };
         } catch (error) {
-            console.error("❌ Error al agregar denominación:", error);
+            console.error("Error to add Denomination:", error);
             return null;
         }
     },
@@ -55,10 +50,10 @@ export const CountService = {
      */
     toggleDenominacion: (id: number, active: boolean): boolean => {
         try {
-            db.runSync("UPDATE denominacion SET activo = ? WHERE id_denominacion = ?;", [active ? 1 : 0, id]);
+            db.runSync("UPDATE denomination SET active = ? WHERE id_denomination = ?;", [active ? 1 : 0, id]);
             return true;
         } catch (error) {
-            console.error("❌ Error al actualizar el estado de la denominación:", error);
+            console.error("Error to update Denomination status:", error);
             return false;
         }
     },
@@ -70,7 +65,7 @@ export const CountService = {
         try {
             // 1. Insertar la Cabecera en la tabla transaccion
             const fechaActual = new Date().toISOString();
-            const resultTransaccion = db.runSync("INSERT INTO transaccion (fecha, monto, observacion) VALUES (?, ?, ?);", [
+            const resultTransaccion = db.runSync("INSERT INTO transactionn (date, total, observation) VALUES (?, ?, ?);", [
                 fechaActual,
                 montoTotal,
                 observacion,
@@ -82,8 +77,8 @@ export const CountService = {
             // 2. Insertar cada fila del desglose en la tabla intermedia
             for (const item of desgloses) {
                 db.runSync(
-                    `INSERT INTO transaccion_denominacion 
-           (id_transaccion, id_denominacion, cantidad, subtotal) 
+                    `INSERT INTO transactionn_denomination 
+           (id_transaction, id_denomination, quantity, subtotal) 
            VALUES (?, ?, ?, ?);`,
 
                     [idTransaccion, item.id_denomination, item.quantity, item.subtotal]
@@ -91,10 +86,10 @@ export const CountService = {
                 );
             }
 
-            console.log(`✅ Arqueo #${idTransaccion} guardado de forma persistente.`);
+            console.log(`Conteo #${idTransaccion} saved.`);
             return true;
         } catch (error) {
-            console.error("❌ Error en la transacción de guardado:", error);
+            console.error("Error to save Transaction:", error);
             return false;
         }
     },
@@ -106,17 +101,17 @@ export const CountService = {
         try {
             const query = `
         SELECT
-          t.id_transaccion, t.fecha, t.monto as total_general, t.observacion,
-          td.cantidad, td.subtotal,
-          d.valor, d.tipo
-        FROM transaccion_denominacion td
-        INNER JOIN transaccion t ON td.id_transaccion = t.id_transaccion
-        INNER JOIN denominacion d ON td.id_denominacion = d.id_denominacion
-        ORDER BY t.fecha DESC;
+          t.id_transaction, t.date, t.total as total_general, t.observation,
+          td.quantity, td.subtotal,
+          d.value, d.type
+        FROM transactionn_denomination td
+        INNER JOIN transactionn t ON td.id_transaction = t.id_transaction
+        INNER JOIN denomination d ON td.id_denomination = d.id_denomination
+        ORDER BY t.date DESC;
       `;
             return db.getAllSync<TransactionRow>(query);
         } catch (error) {
-            console.error("❌ Error al consultar historial completo:", error);
+            console.error("Error to get Transaction:", error);
             return [];
         }
     },

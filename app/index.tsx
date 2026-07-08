@@ -22,16 +22,16 @@ export default function Index() {
     const cargarDenominaciones = useCallback(() => {
         const datos = CountService.getDenominaciones();
         setDenominaciones(datos);
-        setCantidades(Object.fromEntries(datos.map((d) => [d.id, 0])));
+        setCantidades(Object.fromEntries(datos.map((d) => [d.id_denomination, 0])));
     }, []);
 
     useEffect(() => {
         initDatabase().then(cargarDenominaciones);
     }, [cargarDenominaciones]);
 
-    const grandTotal = denominaciones.reduce((sum, d) => sum + d.valor * (cantidades[d.id] ?? 0), 0);
+    const grandTotal = denominaciones.reduce((sum, d) => sum + d.value * (cantidades[d.id_denomination] ?? 0), 0);
     const hasValues = Object.values(cantidades).some((qty) => qty > 0);
-    const reset = () => setCantidades(Object.fromEntries(denominaciones.map((d) => [d.id, 0])));
+    const reset = () => setCantidades(Object.fromEntries(denominaciones.map((d) => [d.id_denomination, 0])));
 
     const primary = "#10b981";
     const foreground = "#fff";
@@ -57,7 +57,6 @@ export default function Index() {
             <Header showReset={activeTab === "conteo" && hasValues} onReset={reset} />
             <View className="flex-1 overflow-hidden w-full   relative">{screen}</View>
 
-            {/* Bottom tab bar */}
             <View className="flex-row shrink-0 border-t w-full border-border bg-card backdrop-blur-md justify-between px-4 pb-5">
                 {TABS.map(({ id, label, Icon }) => {
                     const active = activeTab === id;

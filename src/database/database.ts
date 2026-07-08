@@ -10,51 +10,43 @@ export const db = SQLite.openDatabaseSync("easycount.db");
 export const initDatabase = async (): Promise<void> => {
     try {
         // 1. Creación de la tabla maestra de Denominaciones (Billetes y Monedas de que queremos registrar ps)
-        db.execSync(`
-      CREATE TABLE IF NOT EXISTS denominacion (
-        id_denominacion INTEGER PRIMARY KEY AUTOINCREMENT,
-        valor DECIMAL(10,2) NOT NULL,
-        tipo VARCHAR(50) NOT NULL,
-        image_url VARCHAR(255) NULL,
-        activo BOOLEAN NOT NULL DEFAULT 1
-      );
-    `);
-
-        // Migración: si la tabla ya existía de una versión anterior sin la columna "activo", la agregamos
-        const columnas = db.getAllSync<{ name: string }>("PRAGMA table_info(denominacion);");
-        const tieneActivo = columnas.some((c) => c.name === "activo");
-        if (!tieneActivo) {
-            db.execSync("ALTER TABLE denominacion ADD COLUMN activo BOOLEAN NOT NULL DEFAULT 1;");
-            console.log("🔧 Columna 'activo' agregada a la tabla denominacion.");
-        }
 
         db.execSync(`
-      CREATE TABLE IF NOT EXISTS transaccion (
-        id_transaccion INTEGER PRIMARY KEY AUTOINCREMENT,
-        fecha DATETIME NOT NULL,
-        monto DECIMAL(10,2) NOT NULL,
-        observacion VARCHAR(255) NULL
+      CREATE TABLE IF NOT EXISTS denomination (
+        id_denomination INTEGER PRIMARY KEY AUTOINCREMENT,
+        value DECIMAL(10,2) NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        active BOOLEAN NOT NULL DEFAULT 1
       );
     `);
 
         db.execSync(`
-      CREATE TABLE IF NOT EXISTS transaccion_denominacion (
-        id_transaccion_denominacion INTEGER PRIMARY KEY AUTOINCREMENT,
-        id_transaccion INTEGER,
-        id_denominacion INTEGER,
-        cantidad INTEGER NOT NULL,
+        CREATE TABLE IF NOT EXISTS transactionn (
+        id_transaction INTEGER PRIMARY KEY AUTOINCREMENT,
+        date DATETIME NOT NULL,
+        total DECIMAL(10,2) NOT NULL,
+        observation VARCHAR(255) NULL
+      );
+    `);
+
+        db.execSync(`
+      CREATE TABLE IF NOT EXISTS transactionn_denomination (
+        id_transaction_denomination INTEGER PRIMARY KEY AUTOINCREMENT,
+        id_transaction INTEGER,
+        id_denomination INTEGER,
+        quantity INTEGER NOT NULL,
         subtotal DECIMAL(10,2) NOT NULL,
-        FOREIGN KEY (id_transaccion) REFERENCES transaccion(id_transaccion) ON DELETE CASCADE,
-        FOREIGN KEY (id_denominacion) REFERENCES denominacion(id_denominacion)
+        FOREIGN KEY (id_transaction) REFERENCES transactionn(id_transaction) ON DELETE CASCADE,
+        FOREIGN KEY (id_denomination) REFERENCES denomination(id_denomination) ON DELETE CASCADE
       );
     `);
 
-        console.log("✅ Estructura de tablas verificada/creada con éxito.");
+        console.log(" Correct Create Tables");
 
         // Ejecutamos el pre-llenado de las monedas una vez creadas las tablas
         await seedDenominaciones();
     } catch (error) {
-        console.error("❌ Error al inicializar la base de datos:", error);
+        console.error("Error to start DB:", error);
     }
 };
 
@@ -64,36 +56,36 @@ export const initDatabase = async (): Promise<void> => {
 const seedDenominaciones = async (): Promise<void> => {
     try {
         // Verificamos si ya existen registros previos para no duplicar datos
-        const result: any = db.getFirstSync("SELECT COUNT(*) as count FROM denominacion;");
+        const result: any = db.getFirstSync("SELECT COUNT(*) as count FROM denomination;");
 
         if (result && result.count === 0) {
-            console.log("🌱 Inicializando el catálogo de monedas de Ecuador...");
+            console.log("Starting bills and coins");
 
-            const valoresIniciales = [
-                { valor: 0.01, tipo: "Moneda" },
-                { valor: 0.05, tipo: "Moneda" },
-                { valor: 0.1, tipo: "Moneda" },
-                { valor: 0.25, tipo: "Moneda" },
-                { valor: 0.5, tipo: "Moneda" },
-                { valor: 1.0, tipo: "Moneda" },
+            const startvalue = [
+                { value: 0.01, type: "Moneda", boolean: true },
+                { value: 0.05, type: "Moneda", boolean: true },
+                { value: 0.1, type: "Moneda", boolean: true },
+                { value: 0.25, type: "Moneda", boolean: true },
+                { value: 0.5, type: "Moneda", boolean: true },
+                { value: 1.0, type: "Moneda", boolean: true },
                 // Billetes
-                { valor: 1.0, tipo: "Billete" },
-                { valor: 5.0, tipo: "Billete" },
-                { valor: 10.0, tipo: "Billete" },
-                { valor: 20.0, tipo: "Billete" },
-                { valor: 50.0, tipo: "Billete" },
-                { valor: 100.0, tipo: "Billete" },
+                { value: 1.0, type: "Billete", boolean: true },
+                { value: 5.0, type: "Billete", boolean: true },
+                { value: 10.0, type: "Billete", boolean: true },
+                { value: 20.0, type: "Billete", boolean: true },
+                { value: 50.0, type: "Billete", boolean: true },
+                { value: 100.0, type: "Billete", boolean: true },
             ];
 
             // Preparamos la inserción masiva de datos en bloque
-            for (const item of valoresIniciales) {
-                db.runSync("INSERT INTO denominacion (valor, tipo, image_url) VALUES (?, ?, ?);", [item.valor, item.tipo, ""]);
+            for (const item of startvalue) {
+                db.runSync("INSERT INTO denomination (value, type, active) VALUES (?, ?, ?);", [item.value, item.type, item.boolean]);
             }
-            console.log("🌱 Catálogo de denominaciones precargado con éxito.");
+            console.log("Correct Add Denominations");
         } else {
-            console.log("🪙 El catálogo de denominaciones ya cuenta con datos.");
+            console.log("Denominations already with dates");
         }
     } catch (error) {
-        console.error("❌ Error al precargar las denominaciones:", error);
+        console.error("Error to load denominations:", error);
     }
 };

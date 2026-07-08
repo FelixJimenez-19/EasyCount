@@ -1,8 +1,8 @@
 import { CountService } from "@/src/services/count-service";
 import { BlurView } from "expo-blur";
 import { Save } from "lucide-react-native";
-import { Dispatch, SetStateAction, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Alert, Keyboard, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import DenomRow from "./denomrow";
 import { Denomination, TransactionDenomination } from "./types/models";
 import { fmt } from "./utilities/utilities";
@@ -20,9 +20,21 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
     const [observacion, setObservacion] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [saved, setSaved] = useState(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-    const bills = denominaciones.filter((d) => d.tipo === "Billete");
-    const coins = denominaciones.filter((d) => d.tipo === "Moneda");
+    useEffect(() => {
+        const showEvt = Platform.OS === "android" ? "keyboardDidShow" : "keyboardWillShow";
+        const hideEvt = Platform.OS === "android" ? "keyboardDidHide" : "keyboardWillHide";
+        const showSub = Keyboard.addListener(showEvt, (e) => setKeyboardHeight(e.endCoordinates.height));
+        const hideSub = Keyboard.addListener(hideEvt, () => setKeyboardHeight(0));
+        return () => {
+            showSub.remove();
+            hideSub.remove();
+        };
+    }, []);
+
+    const bills = denominaciones.filter((d) => d.type === "Billete");
+    const coins = denominaciones.filter((d) => d.type === "Moneda");
 
     // Lógica controlada para botones + y - (onUpdate)
     const handleUpdateCantidad = (id: number, valor: number) => {
@@ -45,17 +57,17 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
     // Acción de persistencia definitiva hacia el Backend local
     const handleGuardarCierre = () => {
         if (grandTotal === 0) {
-            Alert.alert("Arqueo Vacío", "No puedes guardar un arqueo con saldo de $0.00");
+            Alert.alert("Conteo Vacío", "No puedes guardar un conteo con saldo de $0.00");
             return;
         }
 
         // Filtramos solo las monedas que el usuario efectivamente contó
         const desglosesAInsertar: TransactionDenomination[] = denominaciones
-            .filter((d) => (cantidades[d.id] || 0) > 0)
+            .filter((d) => (cantidades[d.id_denomination] || 0) > 0)
             .map((d) => ({
-                id_denomination: d.id,
-                quantity: cantidades[d.id],
-                subtotal: calcularSubtotal(d.id, d.valor),
+                id_denomination: d.id_denomination,
+                quantity: cantidades[d.id_denomination],
+                subtotal: calcularSubtotal(d.id_denomination, d.value),
             }));
 
         const exito = CountService.saveTransaction(grandTotal, observacion || "Sin observación", desglosesAInsertar);
@@ -71,8 +83,7 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
             Alert.alert("Error", "Hubo un problema al intentar escribir en el almacenamiento del dispositivo.");
         }
     };
-    const colot_cutton = "#0f172a";
-    console.log("actualizando", handleUpdateCantidad);
+    const color_button = "#0f172a";
     return (
         <View className="flex h-full  flex-col  ">
             {/* Scrollable list */}
@@ -83,9 +94,9 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                         <View className="space-y-2 gap-2 ">
                             {bills.map((d) => (
                                 <DenomRow
-                                    key={d.id}
+                                    key={d.id_denomination}
                                     denomination={d}
-                                    qty={cantidades[d.id] ?? 0}
+                                    qty={cantidades[d.id_denomination] ?? 0}
                                     onUpdate={handleUpdateCantidad}
                                     onDirect={handleInputChange}
                                 />
@@ -99,9 +110,9 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                         <View className="space-y-2 gap-2">
                             {coins.map((d) => (
                                 <DenomRow
-                                    key={d.id}
+                                    key={d.id_denomination}
                                     denomination={d}
-                                    qty={cantidades[d.id] ?? 0}
+                                    qty={cantidades[d.id_denomination] ?? 0}
                                     onUpdate={handleUpdateCantidad}
                                     onDirect={handleInputChange}
                                 />
@@ -129,56 +140,53 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                     className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-semibold text-base flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                 >
                     <Save size={18} />
-
                     <Text>Guardar Conteo</Text>
                 </Pressable>
             </View>
 
             {/* Modal */}
-            {showModal && (
-                <TouchableOpacity
-                    className="absolute inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
-                    onPress={() => setShowModal(false)}
-                >
-                    <BlurView
-                        intensity={40} // Puedes subirlo a 50 o 60 si quieres que se note aún más borroso
-                        tint="dark" // Aplica el tinte oscuro premium estilo iOS
-                        experimentalBlurMethod="dimezisBlurView"
-                        style={StyleSheet.absoluteFill}
-                    />
-                    <TouchableOpacity className="w-full mt-auto bg-card rounded-t-3xl p-6 pb-8 shadow-2xl" onPress={(e) => e.stopPropagation()}>
-                        <View className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-                        <Text className="text-lg font-semibold text-foreground mb-1">Guardar Conteo</Text>
-                        <Text className="text-sm text-muted-foreground mb-4">
-                            Total: <Text className="text-primary font-semibold">${fmt(grandTotal)}</Text>
-                        </Text>
-                        <Text className="block text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Observación opcional</Text>
-                        <TextInput
-                            value={observacion}
-                            onChange={(e) => setObservacion(e.nativeEvent.text)}
-                            multiline
-                            placeholder="Ej: Cierre de caja matutino..."
-                            numberOfLines={3}
-                            className="w-full bg-secondary rounded-2xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground resize-none outline-none focus:ring-2 focus:ring-primary/40 border border-border"
-                        />
-                        <View className="flex flex-row gap-3 mt-4">
-                            <Pressable
-                                onPress={() => setShowModal(false)}
-                                className="flex-1 py-3.5 rounded-2xl border items-center text-center border-border "
-                            >
-                                <Text className="text-muted-foreground font-medium text-sm">Cancelar</Text>
-                            </Pressable>
-                            <Pressable
-                                onPress={handleGuardarCierre}
-                                className="flex flex-row grow-2 py-3.5 rounded-2xl bg-primary items-center justify-center gap-2"
-                            >
-                                <Save color={colot_cutton} size={16} />
-                                <Text className="text-primary-foreground font-semibold text-sm">Confirmar</Text>
-                            </Pressable>
-                        </View>
-                    </TouchableOpacity>
+            <Modal visible={showModal} transparent animationType="slide" statusBarTranslucent onRequestClose={() => setShowModal(false)}>
+                <TouchableOpacity className="flex-1 bg-black/60 backdrop-blur-sm" activeOpacity={1} onPress={() => setShowModal(false)}>
+                    <BlurView intensity={40} tint="dark" experimentalBlurMethod="dimezisBlurView" style={StyleSheet.absoluteFill} />
+                    <View className="flex-1 justify-end" style={{ paddingBottom: keyboardHeight }}>
+                        <TouchableOpacity
+                            className="w-full bg-card rounded-t-3xl p-6 pb-8 shadow-2xl"
+                            activeOpacity={1}
+                            onPress={(e) => e.stopPropagation()}
+                        >
+                            <View className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+                            <Text className="text-lg font-semibold text-foreground mb-1">Guardar Conteo</Text>
+                            <Text className="text-sm text-muted-foreground mb-4">
+                                Total: <Text className="text-primary font-semibold">${fmt(grandTotal)}</Text>
+                            </Text>
+                            <Text className="block text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Observación opcional</Text>
+                            <TextInput
+                                value={observacion}
+                                onChange={(e) => setObservacion(e.nativeEvent.text)}
+                                multiline
+                                placeholder="Ej: Cierre de caja matutino..."
+                                numberOfLines={3}
+                                className="w-full bg-secondary rounded-2xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground resize-none outline-none focus:ring-2 focus:ring-primary/40 border border-border"
+                            />
+                            <View className="flex flex-row gap-3 mt-4">
+                                <Pressable
+                                    onPress={() => setShowModal(false)}
+                                    className="flex-1 py-3.5 rounded-2xl border items-center text-center border-border "
+                                >
+                                    <Text className="text-muted-foreground font-medium text-sm">Cancelar</Text>
+                                </Pressable>
+                                <Pressable
+                                    onPress={handleGuardarCierre}
+                                    className="flex flex-row grow-2 py-3.5 rounded-2xl bg-primary items-center justify-center gap-2"
+                                >
+                                    <Save color={color_button} size={16} />
+                                    <Text className="text-primary-foreground font-semibold text-sm">Confirmar</Text>
+                                </Pressable>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
                 </TouchableOpacity>
-            )}
+            </Modal>
         </View>
     );
 }

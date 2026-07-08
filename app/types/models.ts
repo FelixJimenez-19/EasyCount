@@ -1,18 +1,18 @@
 export type Tab = "conteo" | "reportes" | "catalogo" | "acerca";
 
 export interface Denomination {
-    id: number;
+    id_denomination: number;
     label: string;
-    valor: number;
-    tipo: string;
+    value: number;
+    type: string;
     active: boolean;
 }
 
 export interface Transaction {
-    id: string;
+    id_transaction: string;
     date: Date;
     total: number;
-    note: string;
+    observation: string;
     breakdown: { label: string; value: number; qty: number; subtotal: number }[];
 }
 export interface TransactionDenomination {
@@ -21,16 +21,13 @@ export interface TransactionDenomination {
     subtotal: number;
 }
 
-/**
- * Fila cruda resultante del INNER JOIN de transaccion + transaccion_denominacion + denominacion
- */
 export interface TransactionRow {
-    id_transaccion: number;
-    fecha: string;
+    id_transaction: number;
+    date: string;
     total_general: number;
-    observacion: string;
-    cantidad: number;
+    observation: string;
+    quantity: number;
     subtotal: number;
-    valor: number;
-    tipo: string;
+    value: number;
+    type: string;
 }

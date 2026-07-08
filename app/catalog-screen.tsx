@@ -1,8 +1,8 @@
 import { CountService } from "@/src/services/count-service";
 import { BlurView } from "expo-blur";
 import { Plus, ToggleLeft, ToggleRight } from "lucide-react-native";
-import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, Keyboard, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import CatalogSection from "./catalog-section";
 import { Denomination } from "./types/models";
 // import { INITIAL_DENOMINATIONS } from "./utilities/utilities";
@@ -18,18 +18,33 @@ export default function CatalogScreen({ denominaciones }: catalogprops) {
     const [newType, setNewType] = useState<"Billete" | "Moneda">("Billete");
     const [newActive, setNewActive] = useState(true);
 
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
     const toggle = (id: number) => {
-        const denom = denoms.find((d) => d.id === id);
+        const denom = denoms.find((d) => d.id_denomination === id);
         if (!denom) return;
         const nextActive = !denom.active;
         const persistido = CountService.toggleDenominacion(id, nextActive);
         if (!persistido) return;
-        setDenoms((prev) => prev.map((d) => (d.id === id ? { ...d, active: nextActive } : d)));
+        setDenoms((prev) => prev.map((d) => (d.id_denomination === id ? { ...d, active: nextActive } : d)));
     };
 
+    useEffect(() => {
+        const showEvt = Platform.OS === "android" ? "keyboardDidShow" : "keyboardWillShow";
+        const hideEvt = Platform.OS === "android" ? "keyboardDidHide" : "keyboardWillHide";
+        const showSub = Keyboard.addListener(showEvt, (e) => setKeyboardHeight(e.endCoordinates.height));
+        const hideSub = Keyboard.addListener(hideEvt, () => setKeyboardHeight(0));
+        return () => {
+            showSub.remove();
+            hideSub.remove();
+        };
+    }, []);
     const addDenom = () => {
         const val = parseFloat(newValue);
         if (isNaN(val)) return;
+        if (val <= 0) {
+            Alert.alert("Valor inválido", "El valor de la denominación debe ser mayor a $0.00");
+            return;
+        }
         const nuevo = CountService.addDenominacion(val, newType, newActive);
         if (!nuevo) return;
         setDenoms((prev) => [...prev, nuevo]);
@@ -38,8 +53,8 @@ export default function CatalogScreen({ denominaciones }: catalogprops) {
         setShowAddModal(false);
     };
 
-    const bills = denoms.filter((d) => d.tipo === "Billete");
-    const coins = denoms.filter((d) => d.tipo === "Moneda");
+    const bills = denoms.filter((d) => d.type === "Billete");
+    const coins = denoms.filter((d) => d.type === "Moneda");
     // console.log("mis monedas", bills);
     return (
         <View className="flex h-full">
@@ -64,79 +79,72 @@ export default function CatalogScreen({ denominaciones }: catalogprops) {
             </ScrollView>
 
             {showAddModal && (
-                <TouchableOpacity
-                    // 1. Limpiamos el fondo negro pesado y dejamos el contenedor transparente
-                    className="absolute  inset-0 flex  justify-center"
-                    activeOpacity={1}
-                    onPress={() => setShowAddModal(false)}
-                >
-                    {/* 2. El BlurView ahora es el encargado de pintar el fondo borroso y oscuro */}
-                    <BlurView
-                        intensity={40} // Puedes subirlo a 50 o 60 si quieres que se note aún más borroso
-                        tint="dark" // Aplica el tinte oscuro premium estilo iOS
-                        experimentalBlurMethod="dimezisBlurView"
-                        style={StyleSheet.absoluteFill}
-                    />
-
-                    {/* 3. Tu formulario (Se mantiene intacto, pero ahora lucirá semitraslúcido si tu clase 'bg-card' tiene algo de opacidad) */}
-                    <TouchableOpacity
-                        className="w-full bg-card rounded-t-lg mt-auto p-6 pb-8 shadow-lg  z-10"
-                        activeOpacity={1}
-                        onPress={(e) => e.stopPropagation()}
-                    >
-                        <View className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-                        <Text className="text-lg font-semibold text-foreground mb-4">Agregar Denominación</Text>
-
-                        <View className="space-y-3">
-                            <View>
-                                <Text className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1.5">Tipo</Text>
-                                <View className="flex flex-row gap-2">
-                                    {(["Billete", "Moneda"] as const).map((t) => (
-                                        <Pressable
-                                            key={t}
-                                            onPress={() => setNewType(t)}
-                                            className={`py-2.5 rounded-lg flex-1 items-center text-sm font-medium capitalize transition-colors ${
-                                                newType === t ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
-                                            }`}
-                                        >
-                                            <Text className={newType === t ? "text-primary-foreground" : "text-muted-foreground"}>{t}</Text>
-                                        </Pressable>
-                                    ))}
-                                </View>
-                            </View>
-
-                            <View className="pt-2">
-                                <Text className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1.5">Valor numérico</Text>
-                                <TextInput
-                                    keyboardType="numeric"
-                                    value={newValue}
-                                    onChangeText={(e) => setNewValue(e.valueOf())}
-                                    placeholder="Ej: 5.00"
-                                    className="w-full bg-secondary rounded-lg px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/40 border border-border"
-                                />
-                            </View>
-
-                            <View className="pt-2 flex flex-row items-center justify-between">
-                                <Text className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Activo</Text>
-                                <Pressable onPress={() => setNewActive((prev) => !prev)} className="relative">
-                                    {newActive ? <ToggleRight size={36} color="#4ade80" /> : <ToggleLeft size={36} color="#94a3b8" />}
-                                </Pressable>
-                            </View>
-                        </View>
-
-                        <View className="flex flex-row gap-3 mt-5">
-                            <Pressable
-                                onPress={() => setShowAddModal(false)}
-                                className="flex-1 items-center py-3.5 rounded-2xl border border-border font-medium text-sm"
+                <Modal visible={showAddModal} transparent animationType="slide" statusBarTranslucent onRequestClose={() => setShowAddModal(false)}>
+                    <TouchableOpacity className="absolute  inset-0 flex  justify-center" activeOpacity={1} onPress={() => setShowAddModal(false)}>
+                        <BlurView intensity={40} tint="dark" experimentalBlurMethod="dimezisBlurView" style={StyleSheet.absoluteFill} />
+                        <View className="flex-1 justify-end" style={{ paddingBottom: keyboardHeight }}>
+                            <TouchableOpacity
+                                className="w-full bg-card rounded-t-lg mt-auto p-6 pb-8 shadow-lg  z-10"
+                                activeOpacity={1}
+                                onPress={(e) => e.stopPropagation()}
                             >
-                                <Text className="text-muted-foreground">Cancelar</Text>
-                            </Pressable>
-                            <Pressable onPress={addDenom} className="flex-1 py-3.5 items-center rounded-2xl bg-primary font-semibold text-sm">
-                                <Text className="text-primary-foreground">Agregar</Text>
-                            </Pressable>
+                                <View className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
+                                <Text className="text-lg font-semibold text-foreground mb-4">Agregar Denominación</Text>
+
+                                <View className="space-y-3">
+                                    <View>
+                                        <Text className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1.5">Tipo</Text>
+                                        <View className="flex flex-row gap-2">
+                                            {(["Billete", "Moneda"] as const).map((t) => (
+                                                <Pressable
+                                                    key={t}
+                                                    onPress={() => setNewType(t)}
+                                                    className={`py-2.5 rounded-lg flex-1 items-center text-sm font-medium capitalize  ${
+                                                        newType === t ? "bg-primary " : "bg-secondary "
+                                                    }`}
+                                                >
+                                                    <Text className={newType === t ? "text-primary-foreground" : "text-muted-foreground"}>{t}</Text>
+                                                </Pressable>
+                                            ))}
+                                        </View>
+                                    </View>
+
+                                    <View className="pt-2">
+                                        <Text className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1.5">
+                                            Valor numérico
+                                        </Text>
+                                        <TextInput
+                                            keyboardType="numeric"
+                                            value={newValue}
+                                            onChangeText={(e) => setNewValue(e.valueOf())}
+                                            placeholder="Ej: 5.00"
+                                            className="w-full bg-secondary rounded-lg px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/40 border border-border"
+                                        />
+                                    </View>
+
+                                    <View className="pt-2 flex flex-row items-center justify-between">
+                                        <Text className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Activo</Text>
+                                        <Pressable onPress={() => setNewActive((prev) => !prev)} className="relative">
+                                            {newActive ? <ToggleRight size={36} color="#4ade80" /> : <ToggleLeft size={36} color="#94a3b8" />}
+                                        </Pressable>
+                                    </View>
+                                </View>
+
+                                <View className="flex flex-row gap-3 mt-5">
+                                    <Pressable
+                                        onPress={() => setShowAddModal(false)}
+                                        className="flex-1 items-center py-3.5 rounded-2xl border border-border font-medium text-sm"
+                                    >
+                                        <Text className="text-muted-foreground">Cancelar</Text>
+                                    </Pressable>
+                                    <Pressable onPress={addDenom} className="flex-1 py-3.5 items-center rounded-2xl bg-primary font-semibold text-sm">
+                                        <Text className="text-primary-foreground">Agregar</Text>
+                                    </Pressable>
+                                </View>
+                            </TouchableOpacity>
                         </View>
                     </TouchableOpacity>
-                </TouchableOpacity>
+                </Modal>
             )}
         </View>
     );

@@ -70,6 +70,7 @@ export const UserService = {
 
     getCurrentUser(): User | null {
         try {
+            // antes consultaba a la tabla session y la tabla user por separado
             // aqui tenia mi N+1  porque yo habia estado separando las consultas por columas en un cont session y row ahora los 2 estan en un row y con la sentencia completa
             const row = db.getFirstSync<{ id_user: number; username: string; email: string; created_at: string }>(
                 `SELECT u.id_user, u.username, u.email, u.created_at 

@@ -34,6 +34,25 @@ export const initDatabase = async (): Promise<void> => {
       );
     `);
 
+        db.execSync(`
+      CREATE TABLE IF NOT EXISTS user (
+        id_user INTEGER PRIMARY KEY AUTOINCREMENT,
+        username VARCHAR(100) NOT NULL,
+        email VARCHAR(255) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        created_at DATETIME NOT NULL,
+        updated_at DATETIME NOT NULL
+      );
+    `);
+
+        db.execSync(`
+      CREATE TABLE IF NOT EXISTS session (
+        id INTEGER PRIMARY KEY,
+        id_user INTEGER,
+        FOREIGN KEY (id_user) REFERENCES user(id_user) ON DELETE CASCADE
+      );
+    `);
+
         console.log(" Correct Create Tables");
 
         await seedDenominaciones();

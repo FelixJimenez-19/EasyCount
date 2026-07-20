@@ -1,6 +1,8 @@
-import { BookOpen, Info, Mail } from "lucide-react-native";
+import { BookOpen, Info, LogOut, Mail } from "lucide-react-native";
+import { router } from "expo-router";
 import { Alert, Linking, Pressable, ScrollView, Text, View } from "react-native";
 import Logo from "./components/logo";
+import { UserService } from "@/src/services/user-service";
 
 const credits = [
     { label: "Desarrollado por", value: "Felix Jimenez Dev" },
@@ -94,6 +96,17 @@ export default function About() {
                         <Text className="text-sm font-medium text-foreground">Soporte técnico</Text>
                         <Text className="text-xs text-muted-foreground">fr.jimenezv@uea.edu.ec</Text>
                     </Pressable>
+                </Pressable>
+
+                <Pressable
+                    onPress={() => {
+                        UserService.logout();
+                        router.replace("/login");
+                    }}
+                    className="w-full bg-destructive/10 rounded-2xl p-4 flex-row items-center justify-center gap-x-2 active:opacity-80"
+                >
+                    <LogOut size={18} color="#f87171" />
+                    <Text className="text-destructive font-semibold text-sm">Cerrar Sesión</Text>
                 </Pressable>
             </ScrollView>
         </View>

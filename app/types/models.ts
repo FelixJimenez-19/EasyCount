@@ -1,5 +1,12 @@
 export type Tab = "conteo" | "reportes" | "catalogo" | "acerca";
 
+export interface User {
+    id_user: number;
+    username: string;
+    email: string;
+    created_at: string;
+}
+
 export interface Denomination {
     id_denomination: number;
     label: string;

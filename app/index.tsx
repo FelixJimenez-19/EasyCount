@@ -3,9 +3,11 @@ import { useCallback, useEffect, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import About from "./about";
 import CatalogScreen from "./catalog-screen";
+import { Redirect } from "expo-router";
 
 import { initDatabase } from "@/src/database/database";
 import { CountService } from "@/src/services/count-service";
+import { UserService } from "@/src/services/user-service";
 import Header from "./components/header";
 import Home from "./home";
 import ReportScreen from "./report-screen";
@@ -13,12 +15,17 @@ import { Denomination, Tab } from "./types/models";
 import { TABS } from "./utilities/utilities";
 
 export default function Index() {
+    if (!UserService.isLoggedIn()) {
+        return <Redirect href="/login" />;
+    }
+    return <AppContent />;
+}
+
+function AppContent() {
     const [activeTab, setActiveTab] = useState<Tab>("conteo");
     const [denominaciones, setDenominaciones] = useState<Denomination[]>([]);
     const [cantidades, setCantidades] = useState<Record<number, number>>({});
-    // const [observacion, setObservacion] = useState("");
 
-    // console.log(denominaciones);
     const cargarDenominaciones = useCallback(() => {
         const datos = CountService.getDenominaciones();
         setDenominaciones(datos);
@@ -42,8 +49,6 @@ export default function Index() {
                 denominaciones={denominaciones}
                 cantidades={cantidades}
                 setCantidades={setCantidades}
-                // observacion={observacion}
-                // setObservacion={setObservacion}
                 grandTotal={grandTotal}
             />
         ),

@@ -1,0 +1,4 @@
+node_modules/
+easycount.db
+easycount.db-*
+.env

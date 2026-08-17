@@ -16,7 +16,7 @@ export default function RegisterScreen() {
         return <Redirect href="/" />;
     }
 
-    const handleRegister = () => {
+    const handleRegister = async () => {
         Keyboard.dismiss();
         const trimmedUsername = username.trim();
         const trimmedEmail = email.trim();
@@ -39,10 +39,10 @@ export default function RegisterScreen() {
         setLoading(true);
 
         try {
-            const response = UserService.register(trimmedUsername, trimmedEmail, password);
+            const response = await UserService.register(trimmedUsername, trimmedEmail, password);
 
             if (response.success) {
-                UserService.logout();
+                await UserService.logout();
                 Alert.alert("Registro exitoso", "Tu cuenta ha sido creada correctamente. Inicia sesión para continuar.", [
                     { text: "Ir al Login", onPress: () => router.replace("/login") },
                 ]);

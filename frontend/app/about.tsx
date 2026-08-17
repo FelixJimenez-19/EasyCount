@@ -99,8 +99,8 @@ export default function About() {
                 </Pressable>
 
                 <Pressable
-                    onPress={() => {
-                        UserService.logout();
+                    onPress={async () => {
+                        await UserService.logout();
                         router.replace("/login");
                     }}
                     className="w-full bg-destructive/10 rounded-2xl p-4 flex-row items-center justify-center gap-x-2 active:opacity-80"

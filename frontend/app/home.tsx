@@ -55,7 +55,7 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
     const calcularSubtotal = (id: number, valor: number) => (cantidades[id] || 0) * valor;
 
     // Acción de persistencia definitiva hacia el Backend local
-    const handleGuardarCierre = () => {
+    const handleGuardarCierre = async () => {
         if (grandTotal === 0) {
             Alert.alert("Conteo Vacío", "No puedes guardar un conteo con saldo de $0.00");
             return;
@@ -70,7 +70,7 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                 subtotal: calcularSubtotal(d.id_denomination, d.value),
             }));
 
-        const exito = CountService.saveTransaction(grandTotal, observacion || "Sin observación", desglosesAInsertar);
+        const exito = await CountService.saveTransaction(grandTotal, observacion || "Sin observación", desglosesAInsertar);
 
         setShowModal(false);
 

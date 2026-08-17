@@ -19,11 +19,11 @@ export default function CatalogScreen({ denominaciones }: catalogprops) {
     const [newActive, setNewActive] = useState(true);
 
     const [keyboardHeight, setKeyboardHeight] = useState(0);
-    const toggle = (id: number) => {
+    const toggle = async (id: number) => {
         const denom = denoms.find((d) => d.id_denomination === id);
         if (!denom) return;
         const nextActive = !denom.active;
-        const persistido = CountService.toggleDenominacion(id, nextActive);
+        const persistido = await CountService.toggleDenominacion(id, nextActive);
         if (!persistido) return;
         setDenoms((prev) => prev.map((d) => (d.id_denomination === id ? { ...d, active: nextActive } : d)));
     };
@@ -38,14 +38,14 @@ export default function CatalogScreen({ denominaciones }: catalogprops) {
             hideSub.remove();
         };
     }, []);
-    const addDenom = () => {
+    const addDenom = async () => {
         const val = parseFloat(newValue);
         if (isNaN(val)) return;
         if (val <= 0) {
             Alert.alert("Valor inválido", "El valor de la denominación debe ser mayor a $0.00");
             return;
         }
-        const nuevo = CountService.addDenominacion(val, newType, newActive);
+        const nuevo = await CountService.addDenominacion(val, newType, newActive);
         if (!nuevo) return;
         setDenoms((prev) => [...prev, nuevo]);
         setNewValue("");

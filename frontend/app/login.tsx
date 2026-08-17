@@ -1,8 +1,8 @@
 import { UserService } from "@/src/services/user-service";
 import { Redirect, router } from "expo-router";
-import { useState } from "react";
-import { Alert, Pressable, Text, TextInput, TouchableWithoutFeedback, View, Keyboard } from "react-native";
 import { Eye, EyeOff, LogIn, Mail } from "lucide-react-native";
+import { useState } from "react";
+import { Alert, Keyboard, Pressable, Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -14,7 +14,7 @@ export default function LoginScreen() {
         return <Redirect href="/" />;
     }
 
-    const handleLogin = () => {
+    const handleLogin = async () => {
         Keyboard.dismiss();
         const trimmedEmail = email.trim();
         if (!trimmedEmail || !password) {
@@ -25,7 +25,7 @@ export default function LoginScreen() {
         setLoading(true);
 
         try {
-            const response = UserService.login(trimmedEmail, password);
+            const response = await UserService.login(trimmedEmail, password);
 
             if (response.success) {
                 router.replace("/");

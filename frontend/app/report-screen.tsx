@@ -9,8 +9,8 @@ export default function ReportScreen() {
     const [expanded, setExpanded] = useState<string | null>(null);
     const [history, setHistory] = useState<Transaction[]>([]);
 
-    const cargarHistorial = useCallback(() => {
-        const rows = CountService.getTransaction();
+    const cargarHistorial = useCallback(async () => {
+        const rows = await CountService.getTransaction();
         setHistory(mapTransactionRows(rows));
     }, []);
 

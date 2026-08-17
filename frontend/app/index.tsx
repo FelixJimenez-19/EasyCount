@@ -5,7 +5,6 @@ import About from "./about";
 import CatalogScreen from "./catalog-screen";
 import { Redirect } from "expo-router";
 
-import { initDatabase } from "@/src/database/database";
 import { CountService } from "@/src/services/count-service";
 import { UserService } from "@/src/services/user-service";
 import Header from "./components/header";
@@ -26,14 +25,14 @@ function AppContent() {
     const [denominaciones, setDenominaciones] = useState<Denomination[]>([]);
     const [cantidades, setCantidades] = useState<Record<number, number>>({});
 
-    const cargarDenominaciones = useCallback(() => {
-        const datos = CountService.getDenominaciones();
+    const cargarDenominaciones = useCallback(async () => {
+        const datos = await CountService.getDenominaciones();
         setDenominaciones(datos);
         setCantidades(Object.fromEntries(datos.map((d) => [d.id_denomination, 0])));
     }, []);
 
     useEffect(() => {
-        initDatabase().then(cargarDenominaciones);
+        cargarDenominaciones();
     }, [cargarDenominaciones]);
 
     const grandTotal = denominaciones.reduce((sum, d) => sum + d.value * (cantidades[d.id_denomination] ?? 0), 0);

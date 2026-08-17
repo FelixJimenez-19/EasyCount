@@ -20,12 +20,12 @@ Está compuesta por dos partes:
 
 ## 📋 Requisitos
 
-| Herramienta          | Versión mínima      | Probado con   |
-| -------------------- | ------------------- | ------------- |
-| Node.js              | 20.x                | v24.17.0      |
-| npm                  | 10.x                | 11.13.0       |
-| Git                  | cualquiera reciente | —             |
-| Expo Go (en el móvil)| SDK 54              | —             |
+| Herramienta           | Versión mínima      | Probado con |
+| --------------------- | ------------------- | ----------- |
+| Node.js               | 20.x                | v24.17.0    |
+| npm                   | 10.x                | 11.13.0     |
+| Git                   | cualquiera reciente | —           |
+| Expo Go (en el móvil) | SDK 54              | —           |
 
 No se requiere instalar una base de datos aparte: el backend usa **SQLite** (archivo local que se crea solo).
 
@@ -67,11 +67,12 @@ curl http://localhost:4000/api/health
 
 > La base de datos (`backend/easycount.db`) se crea sola en la primera ejecución y se siembra con las denominaciones de Ecuador.
 
-### 3. Levantar la app móvil
+### 3. Levantar la app móvil (frontend)
 
-En **otra terminal** (deja el backend corriendo), desde la raíz del proyecto:
+En **otra terminal** (deja el backend corriendo):
 
 ```bash
+cd frontend
 npm install
 npx expo start
 ```
@@ -101,6 +102,7 @@ Puedes verificar la URL que está usando la app en la consola de Metro:
 Si el auto-detección no funciona (túnel, emulador, producción), fuerza la URL con una variable de entorno:
 
 ```bash
+# desde el directorio frontend/
 EXPO_PUBLIC_API_URL=http://10.0.0.31:4000/api npx expo start
 ```
 
@@ -110,14 +112,14 @@ EXPO_PUBLIC_API_URL=http://10.0.0.31:4000/api npx expo start
 
 **Frontend (app)**
 
-| Componente            | Versión              |
-| --------------------- | -------------------- |
-| Expo SDK              | ~54.0.34             |
-| React Native          | 0.81.5               |
-| React                 | 19.1.0               |
-| expo-router           | ~6.0.23              |
-| NativeWind (Tailwind) | ^5.0.0-preview.4     |
-| expo-secure-store     | ~15.0.8              |
+| Componente            | Versión          |
+| --------------------- | ---------------- |
+| Expo SDK              | ~54.0.36         |
+| React Native          | 0.81.5           |
+| React                 | 19.1.0           |
+| expo-router           | ~6.0.23          |
+| NativeWind (Tailwind) | ^5.0.0-preview.4 |
+| expo-secure-store     | ~15.0.8          |
 
 **Backend** (más detalle en [`backend/README.md`](backend/README.md))
 
@@ -133,29 +135,29 @@ EXPO_PUBLIC_API_URL=http://10.0.0.31:4000/api npx expo start
 
 ## 🔌 Endpoints que consume la app
 
-| Método | Ruta                       | Auth | Descripción                         |
-| ------ | -------------------------- | ---- | ----------------------------------- |
-| POST   | `/api/auth/register`       | No   | Registro de usuario                 |
-| POST   | `/api/auth/login`          | No   | Login (devuelve JWT)                |
-| GET    | `/api/auth/me`             | Sí   | Usuario autenticado                 |
-| GET    | `/api/denominations`       | Sí   | Lista de denominaciones             |
-| POST   | `/api/denominations`       | Sí   | Crear denominación                  |
-| PATCH  | `/api/denominations/:id`   | Sí   | Activar/desactivar denominación     |
-| GET    | `/api/transactions`        | Sí   | Historial de conteos                |
-| POST   | `/api/transactions`        | Sí   | Guardar conteo                      |
+| Método | Ruta                     | Auth | Descripción                     |
+| ------ | ------------------------ | ---- | ------------------------------- |
+| POST   | `/api/auth/register`     | No   | Registro de usuario             |
+| POST   | `/api/auth/login`        | No   | Login (devuelve JWT)            |
+| GET    | `/api/auth/me`           | Sí   | Usuario autenticado             |
+| GET    | `/api/denominations`     | Sí   | Lista de denominaciones         |
+| POST   | `/api/denominations`     | Sí   | Crear denominación              |
+| PATCH  | `/api/denominations/:id` | Sí   | Activar/desactivar denominación |
+| GET    | `/api/transactions`      | Sí   | Historial de conteos            |
+| POST   | `/api/transactions`      | Sí   | Guardar conteo                  |
 
 ---
 
 ## 🛠️ Solución de problemas
 
-| Problema                            | Causa probable                          | Solución                                        |
-| ----------------------------------- | --------------------------------------- | ----------------------------------------------- |
-| `Network request failed`            | Backend no está corriendo               | Ejecuta `cd backend && npm start`               |
-| `Network request failed`            | Celular y PC en redes distintas         | Conecta ambos a la misma Wi-Fi                  |
-| `Network request failed`            | Firewall bloquea el puerto 4000         | Abre el puerto 4000 (ufw/firewall)              |
-| URL incorrecta en la app            | IP no detectada                         | Usa `EXPO_PUBLIC_API_URL=...` manualmente       |
-| `401 No autorizado`                 | Token ausente/expirado                  | Vuelve a iniciar sesión                         |
-| `El correo ya está registrado`      | Email duplicado                         | Usa otro correo o inicia sesión                 |
+| Problema                       | Causa probable                  | Solución                                  |
+| ------------------------------ | ------------------------------- | ----------------------------------------- |
+| `Network request failed`       | Backend no está corriendo       | Ejecuta `cd backend && npm start`         |
+| `Network request failed`       | Celular y PC en redes distintas | Conecta ambos a la misma Wi-Fi            |
+| `Network request failed`       | Firewall bloquea el puerto 4000 | Abre el puerto 4000 (ufw/firewall)        |
+| URL incorrecta en la app       | IP no detectada                 | Usa `EXPO_PUBLIC_API_URL=...` manualmente |
+| `401 No autorizado`            | Token ausente/expirado          | Vuelve a iniciar sesión                   |
+| `El correo ya está registrado` | Email duplicado                 | Usa otro correo o inicia sesión           |
 
 ---
 
@@ -163,21 +165,23 @@ EXPO_PUBLIC_API_URL=http://10.0.0.31:4000/api npx expo start
 
 ```
 EasyCount/
-├── app/                     # pantallas (expo-router) y componentes UI
-│   ├── _layout.tsx          # hidratación del token (SecureStore) y navegación
-│   ├── index.tsx            # tabs: conteo / reportes / catálogo / acerca
-│   ├── login.tsx, register.tsx
-│   ├── home.tsx, denomrow.tsx
-│   ├── report-screen.tsx
-│   ├── catalog-screen.tsx, catalog-section.tsx
-│   └── about.tsx
-├── src/
-│   ├── config/api.ts        # resolución de la URL base de la API
-│   └── services/
-│       ├── api-client.ts    # fetch wrapper (agrega Bearer token, maneja errores)
-│       ├── auth-store.ts    # token JWT en memoria + SecureStore
-│       ├── user-service.ts  # auth contra la API
-│       └── count-service.ts # denominaciones y transacciones contra la API
+├── frontend/                # App móvil (Expo + React Native)
+│   ├── app/                 # pantallas (expo-router) y componentes UI
+│   │   ├── _layout.tsx      # hidratación del token (SecureStore) y navegación
+│   │   ├── index.tsx        # tabs: conteo / reportes / catálogo / acerca
+│   │   ├── login.tsx, register.tsx
+│   │   ├── home.tsx, denomrow.tsx
+│   │   ├── report-screen.tsx
+│   │   ├── catalog-screen.tsx, catalog-section.tsx
+│   │   └── about.tsx
+│   ├── src/
+│   │   ├── config/api.ts        # resolución de la URL base de la API
+│   │   └── services/
+│   │       ├── api-client.ts    # fetch wrapper (agrega Bearer token, maneja errores)
+│   │       ├── auth-store.ts    # token JWT en memoria + SecureStore
+│   │       ├── user-service.ts  # auth contra la API
+│   │       └── count-service.ts # denominaciones y transacciones contra la API
+│   └── package.json             # dependencias y scripts del frontend
 └── backend/                 # API REST (Express + SQLite + JWT)
     └── src/ (index, config, db, middleware, routes)
 ```

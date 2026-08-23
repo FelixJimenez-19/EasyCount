@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { Alert, Linking, Pressable, ScrollView, Text, View } from "react-native";
 import Logo from "./components/logo";
 import { UserService } from "@/src/services/user-service";
+import Button from "./components/buttons";
 
 const credits = [
     { label: "Desarrollado por", value: "Felix Jimenez Dev" },
@@ -98,16 +99,15 @@ export default function About() {
                     </Pressable>
                 </Pressable>
 
-                <Pressable
+                <Button
+                    label="Cerrar Sesión"
+                    icon={LogOut}
+                    variant="destructive"
                     onPress={async () => {
                         await UserService.logout();
                         router.replace("/login");
                     }}
-                    className="w-full bg-destructive/10 rounded-2xl p-4 flex-row items-center justify-center gap-x-2 active:opacity-80"
-                >
-                    <LogOut size={18} color="#f87171" />
-                    <Text className="text-destructive font-semibold text-sm">Cerrar Sesión</Text>
-                </Pressable>
+                />
             </ScrollView>
         </View>
     );

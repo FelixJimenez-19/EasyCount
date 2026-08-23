@@ -6,6 +6,7 @@ import { Alert, Keyboard, Modal, Platform, Pressable, ScrollView, StyleSheet, Te
 import DenomRow from "./denomrow";
 import { Denomination, TransactionDenomination } from "./types/models";
 import { fmt } from "./utilities/utilities";
+import Button from "./components/buttons";
 
 interface HomeProps {
     denominaciones: Denomination[];
@@ -135,13 +136,14 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                     <Text className="text-sm text-muted-foreground font-medium">Total</Text>
                     <Text className="text-3xl font-bold text-primary font-mono">${fmt(grandTotal)}</Text>
                 </View>
-                <Pressable
+                {/* <Pressable
                     onPress={() => setShowModal(true)}
                     className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-semibold text-base flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                 >
                     <Save size={18} />
                     <Text>Guardar Conteo</Text>
-                </Pressable>
+                </Pressable> */}
+                <Button label="Guardar Conteo" icon={Save} size="xl" onPress={() => setShowModal(true)} />
             </View>
 
             {/* Modal */}
@@ -168,20 +170,9 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                                 numberOfLines={3}
                                 className="w-full bg-secondary rounded-2xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground resize-none outline-none focus:ring-2 focus:ring-primary/40 border border-border"
                             />
-                            <View className="flex flex-row gap-3 mt-4">
-                                <Pressable
-                                    onPress={() => setShowModal(false)}
-                                    className="flex-1 py-3.5 rounded-2xl border items-center text-center border-border "
-                                >
-                                    <Text className="text-muted-foreground font-medium text-sm">Cancelar</Text>
-                                </Pressable>
-                                <Pressable
-                                    onPress={handleGuardarCierre}
-                                    className="flex flex-row grow-2 py-3.5 rounded-2xl bg-primary items-center justify-center gap-2"
-                                >
-                                    <Save color={color_button} size={16} />
-                                    <Text className="text-primary-foreground font-semibold text-sm">Confirmar</Text>
-                                </Pressable>
+                            <View className="flex flex-row  gap-3 mt-4">
+                                <Button label="Cancelar" variant="outline" onPress={() => setShowModal(false)} />
+                                <Button label="Confirmar" variant="primary" icon={Save} className=" grow-2" onPress={handleGuardarCierre} />
                             </View>
                         </TouchableOpacity>
                     </View>

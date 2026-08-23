@@ -1,4 +1,4 @@
-import { BookOpen, Calculator, FileText, Info } from "lucide-react-native";
+import { BookOpen, Calculator, FileText, Info, type LucideIcon } from "lucide-react-native";
 import { Tab, Transaction, TransactionRow } from "../types/models";
 
 export const fmt = (n: number) => n.toLocaleString("es-EC", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -35,7 +35,7 @@ export const fmtDate = (d: Date) =>
     " · " +
     d.toLocaleTimeString("es-EC", { hour: "2-digit", minute: "2-digit" });
 
-export const TABS: { id: Tab; label: string; Icon: React.ElementType }[] = [
+export const TABS: { id: Tab; label: string; Icon: LucideIcon }[] = [
     { id: "conteo", label: "Conteo", Icon: Calculator },
     { id: "reportes", label: "Reportes", Icon: FileText },
     { id: "catalogo", label: "Catálogo", Icon: BookOpen },

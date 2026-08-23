@@ -1,12 +1,13 @@
 import "@/global.css";
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { View } from "react-native";
 import About from "./about";
 import CatalogScreen from "./catalog-screen";
 import { Redirect } from "expo-router";
 
 import { CountService } from "@/src/services/count-service";
 import { UserService } from "@/src/services/user-service";
+import Button from "./components/buttons";
 import Header from "./components/header";
 import Home from "./home";
 import ReportScreen from "./report-screen";
@@ -39,18 +40,8 @@ function AppContent() {
     const hasValues = Object.values(cantidades).some((qty) => qty > 0);
     const reset = () => setCantidades(Object.fromEntries(denominaciones.map((d) => [d.id_denomination, 0])));
 
-    const primary = "#10b981";
-    const foreground = "#fff";
-
     const screen = {
-        conteo: (
-            <Home
-                denominaciones={denominaciones}
-                cantidades={cantidades}
-                setCantidades={setCantidades}
-                grandTotal={grandTotal}
-            />
-        ),
+        conteo: <Home denominaciones={denominaciones} cantidades={cantidades} setCantidades={setCantidades} grandTotal={grandTotal} />,
         reportes: <ReportScreen />,
         catalogo: <CatalogScreen denominaciones={denominaciones} />,
         acerca: <About />,
@@ -62,27 +53,17 @@ function AppContent() {
             <View className="flex-1 overflow-hidden w-full   relative">{screen}</View>
 
             <View className="flex-row shrink-0 border-t w-full border-border bg-card backdrop-blur-md justify-between px-4 pb-5">
-                {TABS.map(({ id, label, Icon }) => {
-                    const active = activeTab === id;
-                    return (
-                        <Pressable
-                            key={id}
-                            onPress={() => setActiveTab(id)}
-                            className="flex flex-col items-center gap-1 py-1.5 px-4  rounded-2xl  transition-all"
-                        >
-                            <View
-                                className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
-                                    active ? "bg-primary/15" : "bg-transparent"
-                                }`}
-                            >
-                                <Icon size={22} className={`transition-colors  `} color={active ? primary : foreground} />
-                            </View>
-                            <Text className={`text-[10px] font-medium leading-none transition-colors ${active ? "text-primary" : "text-foreground"}`}>
-                                {label}
-                            </Text>
-                        </Pressable>
-                    );
-                })}
+                {TABS.map(({ id, label, Icon }) => (
+                    <Button
+                        key={id}
+                        variant="tab"
+                        icon={Icon}
+                        label={label}
+                        className="rounded-xl"
+                        active={activeTab === id}
+                        onPress={() => setActiveTab(id)}
+                    />
+                ))}
             </View>
         </View>
     );

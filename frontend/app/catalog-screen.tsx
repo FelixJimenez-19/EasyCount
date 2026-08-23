@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { Alert, Keyboard, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import CatalogSection from "./catalog-section";
 import { Denomination } from "./types/models";
+import Button from "./components/buttons";
+import Input from "./components/input";
 // import { INITIAL_DENOMINATIONS } from "./utilities/utilities";
 
 interface catalogprops {
@@ -63,13 +65,8 @@ export default function CatalogScreen({ denominaciones }: catalogprops) {
                     <Text className="text-xl font-semibold text-foreground">Catálogo</Text>
                     <Text className="text-xs text-muted-foreground mt-1">Denominaciones activas · Ecuador</Text>
                 </View>
-                <Pressable
-                    onPress={() => setShowAddModal(true)}
-                    className="flex flex-row items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold"
-                >
-                    <Plus size={14} />
-                    <Text>Nueva</Text>
-                </Pressable>
+
+                <Button label="Nueva" variant="primary" icon={Plus} onPress={() => setShowAddModal(true)} />
             </View>
 
             <ScrollView className="flex-1 overflow-y-auto px-4 pb-4 space-y-5" showsVerticalScrollIndicator={false}>
@@ -110,15 +107,12 @@ export default function CatalogScreen({ denominaciones }: catalogprops) {
                                     </View>
 
                                     <View className="pt-2">
-                                        <Text className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-1.5">
-                                            Valor numérico
-                                        </Text>
-                                        <TextInput
+                                        <Input
+                                            label="Valor Numerico"
                                             keyboardType="numeric"
                                             value={newValue}
                                             onChangeText={(e) => setNewValue(e.valueOf())}
                                             placeholder="Ej: 5.00"
-                                            className="w-full bg-secondary rounded-lg px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/40 border border-border"
                                         />
                                     </View>
 
@@ -131,15 +125,8 @@ export default function CatalogScreen({ denominaciones }: catalogprops) {
                                 </View>
 
                                 <View className="flex flex-row gap-3 mt-5">
-                                    <Pressable
-                                        onPress={() => setShowAddModal(false)}
-                                        className="flex-1 items-center py-3.5 rounded-2xl border border-border font-medium text-sm"
-                                    >
-                                        <Text className="text-muted-foreground">Cancelar</Text>
-                                    </Pressable>
-                                    <Pressable onPress={addDenom} className="flex-1 py-3.5 items-center rounded-2xl bg-primary font-semibold text-sm">
-                                        <Text className="text-primary-foreground">Agregar</Text>
-                                    </Pressable>
+                                    <Button label="Cancelar" variant="outline" className="flex-1" onPress={() => setShowAddModal(false)} />
+                                    <Button label="Agregar" variant="primary" className="flex-1" onPress={addDenom} />
                                 </View>
                             </TouchableOpacity>
                         </View>

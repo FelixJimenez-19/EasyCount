@@ -10,7 +10,7 @@ const cn = (...classes: (string | false | null | undefined)[]) => classes.filter
 const VARIANTS: Record<Exclude<Variant, "tab">, { container: string; label: string; icon: string }> = {
     primary: {
         container: "bg-primary",
-        label: "text-primary-foreground font-semibold",
+        label: "text-primary-foreground   font-semibold",
         icon: "#0f172a",
     },
     outline: {

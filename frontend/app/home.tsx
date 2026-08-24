@@ -136,13 +136,7 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                     <Text className="text-sm text-muted-foreground font-medium">Total</Text>
                     <Text className="text-3xl font-bold text-primary font-mono">${fmt(grandTotal)}</Text>
                 </View>
-                {/* <Pressable
-                    onPress={() => setShowModal(true)}
-                    className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-semibold text-base flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-                >
-                    <Save size={18} />
-                    <Text>Guardar Conteo</Text>
-                </Pressable> */}
+
                 <Button label="Guardar Conteo" icon={Save} size="xl" onPress={() => setShowModal(true)} />
             </View>
 

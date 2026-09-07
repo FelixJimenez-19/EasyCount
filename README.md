@@ -14,7 +14,9 @@ Está compuesta por dos partes:
 └──────────────────┘  <─────────────────────────  └──────────────────────┘
 ```
 
-> La app **no** usa una base de datos local: todo lo consume desde la API.
+> La app combina una **base de datos local** (SQLite + Drizzle) con la API: guarda y lee sin
+> conexión, encola operaciones y sincroniza al recuperar la red. Detalles en
+> [docs/offline-datos-y-sincronizacion.md](docs/offline-datos-y-sincronizacion.md).
 
 ---
 
@@ -120,6 +122,10 @@ EXPO_PUBLIC_API_URL=http://10.0.0.31:4000/api npx expo start
 | expo-router           | ~6.0.23          |
 | NativeWind (Tailwind) | ^5.0.0-preview.4 |
 | expo-secure-store     | ~15.0.8          |
+| expo-sqlite           | ~16.0.10         |
+| drizzle-orm           | ^1.0.0-rc.4      |
+| expo-network          | ~8.0.8           |
+| expo-crypto           | ~15.0.9          |
 
 **Backend** (más detalle en [`backend/README.md`](backend/README.md))
 
@@ -167,21 +173,29 @@ EXPO_PUBLIC_API_URL=http://10.0.0.31:4000/api npx expo start
 EasyCount/
 ├── frontend/                # App móvil (Expo + React Native)
 │   ├── app/                 # pantallas (expo-router) y componentes UI
-│   │   ├── _layout.tsx      # hidratación del token (SecureStore) y navegación
+│   │   ├── _layout.tsx      # hidratación del token (SecureStore) + migraciones BD
 │   │   ├── index.tsx        # tabs: conteo / reportes / catálogo / acerca
 │   │   ├── login.tsx, register.tsx
 │   │   ├── home.tsx, denomrow.tsx
 │   │   ├── report-screen.tsx
 │   │   ├── catalog-screen.tsx, catalog-section.tsx
 │   │   └── about.tsx
+│   ├── db/                  # esquema Drizzle (fuente de verdad del esquema local)
+│   ├── drizzle/             # migraciones SQL generadas por drizzle-kit
 │   ├── src/
 │   │   ├── config/api.ts        # resolución de la URL base de la API
+│   │   ├── db/                  # cliente SQLite + repositorios locales
+│   │   │   ├── client.ts, migrate.ts, clear.ts
+│   │   │   └── repositories/    # denominations, transactions, operations, sync-meta
+│   │   ├── utils/id.ts          # UUID v4 (expo-crypto)
 │   │   └── services/
 │   │       ├── api-client.ts    # fetch wrapper (agrega Bearer token, maneja errores)
 │   │       ├── auth-store.ts    # token JWT en memoria + SecureStore
-│   │       ├── user-service.ts  # auth contra la API
-│   │       └── count-service.ts # denominaciones y transacciones contra la API
+│   │       ├── user-service.ts  # auth contra la API (+ limpieza en logout)
+│   │       ├── count-service.ts # denominaciones/transacciones (offline-first)
+│   │       └── sync-engine.ts   # cola + reintentos + listener de red
 │   └── package.json             # dependencias y scripts del frontend
+├── docs/                    # documentación de datos, offline y sincronización
 └── backend/                 # API REST (Express + SQLite + JWT)
     └── src/ (index, config, db, middleware, routes)
 ```

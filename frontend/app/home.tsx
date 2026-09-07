@@ -4,7 +4,7 @@ import { Save } from "lucide-react-native";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Alert, Keyboard, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import DenomRow from "./denomrow";
-import { Denomination, TransactionDenomination } from "./types/models";
+import { Denomination, TransactionBreakdown } from "./types/models";
 import { fmt } from "./utilities/utilities";
 import Button from "./components/buttons";
 
@@ -63,10 +63,12 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
         }
 
         // Filtramos solo las monedas que el usuario efectivamente contó
-        const desglosesAInsertar: TransactionDenomination[] = denominaciones
+        const desglosesAInsertar: TransactionBreakdown[] = denominaciones
             .filter((d) => (cantidades[d.id_denomination] || 0) > 0)
             .map((d) => ({
                 id_denomination: d.id_denomination,
+                value: d.value,
+                label: d.label,
                 quantity: cantidades[d.id_denomination],
                 subtotal: calcularSubtotal(d.id_denomination, d.value),
             }));
@@ -84,7 +86,7 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
             Alert.alert("Error", "Hubo un problema al intentar escribir en el almacenamiento del dispositivo.");
         }
     };
-    const color_button = "#0f172a";
+
     return (
         <View className="flex h-full  flex-col  ">
             {/* Scrollable list */}

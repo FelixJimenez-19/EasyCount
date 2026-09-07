@@ -7,6 +7,7 @@ import { Redirect } from "expo-router";
 
 import { CountService } from "@/src/services/count-service";
 import { UserService } from "@/src/services/user-service";
+import { SyncEngine } from "@/src/services/sync-engine";
 import Button from "./components/buttons";
 import Header from "./components/header";
 import Home from "./home";
@@ -34,6 +35,8 @@ function AppContent() {
 
     useEffect(() => {
         cargarDenominaciones();
+        SyncEngine.start();
+        return () => SyncEngine.stop();
     }, [cargarDenominaciones]);
 
     const grandTotal = denominaciones.reduce((sum, d) => sum + d.value * (cantidades[d.id_denomination] ?? 0), 0);

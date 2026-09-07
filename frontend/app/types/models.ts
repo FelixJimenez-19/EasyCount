@@ -28,11 +28,21 @@ export interface TransactionDenomination {
     subtotal: number;
 }
 
+export interface TransactionBreakdown {
+    id_denomination: number;
+    value: number;
+    label: string;
+    quantity: number;
+    subtotal: number;
+}
+
 export interface TransactionRow {
     id_transaction: number;
+    client_id: string | null;
     date: string;
     total_general: number;
     observation: string;
+    id_denomination: number;
     quantity: number;
     subtotal: number;
     value: number;

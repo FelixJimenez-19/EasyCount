@@ -5,7 +5,7 @@ import { requireAuth } from "../middleware/auth.js";
 const router = Router();
 
 router.post("/", requireAuth, (req, res) => {
-    const { total, observation, breakdown } = req.body || {};
+    const { total, observation, breakdown, clientId } = req.body || {};
 
     if (typeof total !== "number") {
         return res.status(400).json({ message: "El total es obligatorio." });
@@ -14,12 +14,25 @@ router.post("/", requireAuth, (req, res) => {
         return res.status(400).json({ message: "El desglose es obligatorio." });
     }
 
+    // Idempotencia: si la operación ya fue procesada con el mismo clientId, se devuelve la existente.
+    if (clientId) {
+        const existing = db.prepare("SELECT id_transaction FROM transactionn WHERE client_id = ?").get(clientId);
+        if (existing) {
+            return res.status(200).json({
+                id_transaction: existing.id_transaction,
+                total,
+                observation: observation || "Sin observación",
+                duplicated: true,
+            });
+        }
+    }
+
     const fecha = new Date().toISOString();
 
     const save = db.transaction(() => {
         const result = db
-            .prepare("INSERT INTO transactionn (date, total, observation) VALUES (?, ?, ?)")
-            .run(fecha, total, observation || "Sin observación");
+            .prepare("INSERT INTO transactionn (date, total, observation, client_id) VALUES (?, ?, ?, ?)")
+            .run(fecha, total, observation || "Sin observación", clientId || null);
 
         const idTransaction = result.lastInsertRowid;
 
@@ -44,9 +57,9 @@ router.get("/", requireAuth, (_req, res) => {
     const rows = db
         .prepare(
             `SELECT
-               t.id_transaction, t.date, t.total AS total_general, t.observation,
+               t.id_transaction, t.client_id, t.date, t.total AS total_general, t.observation,
                td.quantity, td.subtotal,
-               d.value, d.type
+               d.id_denomination, d.value, d.type
              FROM transactionn_denomination td
              INNER JOIN transactionn t ON td.id_transaction = t.id_transaction
              INNER JOIN denomination d ON td.id_denomination = d.id_denomination

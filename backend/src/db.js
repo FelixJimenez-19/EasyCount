@@ -44,6 +44,19 @@ db.exec(`
   );
 `);
 
+// Migraciones ligeras: añade columnas nuevas sin romper bases de datos existentes.
+const hasColumn = (table, column) =>
+    db.prepare(`PRAGMA table_info(${table})`).all().some((c) => c.name === column);
+
+if (!hasColumn("transactionn", "client_id")) {
+    db.exec("ALTER TABLE transactionn ADD COLUMN client_id VARCHAR(255) NULL");
+    db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_transactionn_client_id ON transactionn(client_id)");
+}
+
+if (!hasColumn("denomination", "updated_at")) {
+    db.exec("ALTER TABLE denomination ADD COLUMN updated_at DATETIME NULL");
+}
+
 export const seedDenominaciones = () => {
     const { count } = db.prepare("SELECT COUNT(*) AS count FROM denomination").get();
     if (count > 0) return;

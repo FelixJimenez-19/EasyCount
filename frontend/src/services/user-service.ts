@@ -1,6 +1,8 @@
 import { User } from "@/app/types/models";
+import { clearAllLocalData } from "@/src/db/clear";
 import { ApiError, api } from "./api-client";
 import { AuthStore } from "./auth-store";
+import { SyncEngine } from "./sync-engine";
 
 interface AuthResponse {
     user: User;
@@ -41,6 +43,8 @@ export const UserService = {
 
     async logout(): Promise<boolean> {
         try {
+            SyncEngine.stop();
+            await clearAllLocalData();
             await AuthStore.clear();
             return true;
         } catch (error) {

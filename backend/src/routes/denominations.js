@@ -42,20 +42,30 @@ router.post("/", requireAuth, (req, res) => {
 
 router.patch("/:id", requireAuth, (req, res) => {
     const { id } = req.params;
-    const { active } = req.body || {};
+    const { active, updatedAt } = req.body || {};
 
     if (typeof active !== "boolean") {
         return res.status(400).json({ message: "El campo active es obligatorio." });
     }
 
     const row = db
-        .prepare("SELECT id_denomination FROM denomination WHERE id_denomination = ?")
+        .prepare("SELECT id_denomination, updated_at FROM denomination WHERE id_denomination = ?")
         .get(id);
     if (!row) {
         return res.status(404).json({ message: "Denominación no encontrada." });
     }
 
-    db.prepare("UPDATE denomination SET active = ? WHERE id_denomination = ?").run(active ? 1 : 0, id);
+    // Resolución de conflictos "last-write-wins": la escritura más reciente gana.
+    if (updatedAt) {
+        const incoming = new Date(updatedAt).getTime();
+        const current = row.updated_at ? new Date(row.updated_at).getTime() : 0;
+        if (incoming <= current) {
+            return res.status(409).json({ message: "Escritura obsoleta; el servidor conserva el valor más reciente." });
+        }
+    }
+
+    const nextUpdatedAt = updatedAt || new Date().toISOString();
+    db.prepare("UPDATE denomination SET active = ?, updated_at = ? WHERE id_denomination = ?").run(active ? 1 : 0, nextUpdatedAt, id);
 
     const updated = db
         .prepare("SELECT id_denomination, value, type, active FROM denomination WHERE id_denomination = ?")

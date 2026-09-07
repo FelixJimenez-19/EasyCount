@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 import { AuthStore } from "@/src/services/auth-store";
+import { runMigrations } from "@/src/db/migrate";
 
 export default function RootLayout() {
     const [ready, setReady] = useState(false);
 
     useEffect(() => {
-        AuthStore.hydrate().finally(() => setReady(true));
+        Promise.all([AuthStore.hydrate(), runMigrations()]).finally(() => setReady(true));
     }, []);
 
     if (!ready) {

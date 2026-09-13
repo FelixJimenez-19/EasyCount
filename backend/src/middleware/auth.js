@@ -6,6 +6,13 @@ export const signToken = (user) =>
         expiresIn: config.jwtExpiresIn,
     });
 
+export const signRefreshToken = (user) =>
+    jwt.sign({ id_user: user.id_user, type: "refresh" }, config.jwtSecret, {
+        expiresIn: config.jwtRefreshExpiresIn,
+    });
+
+export const verifyRefreshToken = (token) => jwt.verify(token, config.jwtSecret);
+
 export const requireAuth = (req, res, next) => {
     const header = req.headers.authorization || "";
     const token = header.startsWith("Bearer ") ? header.slice(7) : null;

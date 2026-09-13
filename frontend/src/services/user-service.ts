@@ -1,42 +1,41 @@
-import { User } from "@/app/types/models";
+import type { User } from "@/src/models/user";
 import { clearAllLocalData } from "@/src/db/clear";
-import { ApiError, api } from "./api-client";
+import { AuthRemote } from "@/src/data/remote/auth-remote";
+import { toUserMessage } from "@/src/domain/errors";
+import { logger } from "@/src/utils/logger";
 import { AuthStore } from "./auth-store";
 import { SyncEngine } from "./sync-engine";
 
-interface AuthResponse {
-    user: User;
-    token: string;
-}
+type AuthResult = { success: boolean; user?: User; message?: string };
 
 export const UserService = {
-    async register(username: string, email: string, password: string): Promise<{ success: boolean; user?: User; message?: string }> {
+    async register(username: string, email: string, password: string): Promise<AuthResult> {
         try {
-            const data = await api.post<AuthResponse>("/auth/register", { username, email, password });
-            await AuthStore.setToken(data.token);
+            const data = await AuthRemote.register(username, email, password);
+            await AuthStore.setTokens(data.token, data.refreshToken);
             return { success: true, user: data.user };
         } catch (error) {
-            console.error("Error registering user:", error);
-            return { success: false, message: error instanceof ApiError ? error.message : "Error al registrar el usuario." };
+            logger.error("Error registering user:", error);
+            return { success: false, message: toUserMessage(error, "Error al registrar el usuario.") };
         }
     },
 
-    async login(email: string, password: string): Promise<{ success: boolean; user?: User; message?: string }> {
+    async login(email: string, password: string): Promise<AuthResult> {
         try {
-            const data = await api.post<AuthResponse>("/auth/login", { email, password });
-            await AuthStore.setToken(data.token);
+            const data = await AuthRemote.login(email, password);
+            await AuthStore.setTokens(data.token, data.refreshToken);
             return { success: true, user: data.user };
         } catch (error) {
-            console.error("Error logging in:", error);
-            return { success: false, message: error instanceof ApiError ? error.message : "Error al iniciar sesión." };
+            logger.error("Error logging in:", error);
+            return { success: false, message: toUserMessage(error, "Error al iniciar sesión.") };
         }
     },
 
     async getCurrentUser(): Promise<User | null> {
         try {
-            return await api.get<User>("/auth/me");
+            return await AuthRemote.me();
         } catch (error) {
-            console.error("Error getting current user:", error);
+            logger.error("Error getting current user:", error);
             return null;
         }
     },
@@ -48,7 +47,7 @@ export const UserService = {
             await AuthStore.clear();
             return true;
         } catch (error) {
-            console.error("Error logging out:", error);
+            logger.error("Error logging out:", error);
             return false;
         }
     },

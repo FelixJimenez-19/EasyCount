@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db } from "../db.js";
 import { requireAuth } from "../middleware/auth.js";
+import { validationError } from "../validation.js";
 
 const router = Router();
 
@@ -22,11 +23,15 @@ router.get("/", requireAuth, (_req, res) => {
 router.post("/", requireAuth, (req, res) => {
     const { value, type, active } = req.body || {};
 
+    const errors = {};
     if (typeof value !== "number" || value <= 0) {
-        return res.status(400).json({ message: "El valor debe ser mayor a $0.00." });
+        errors.value = "El valor debe ser mayor a $0.00.";
     }
     if (!["Billete", "Moneda"].includes(type)) {
-        return res.status(400).json({ message: "El tipo debe ser Billete o Moneda." });
+        errors.type = "El tipo debe ser Billete o Moneda.";
+    }
+    if (Object.keys(errors).length > 0) {
+        return validationError(res, errors);
     }
 
     const result = db
@@ -45,7 +50,7 @@ router.patch("/:id", requireAuth, (req, res) => {
     const { active, updatedAt } = req.body || {};
 
     if (typeof active !== "boolean") {
-        return res.status(400).json({ message: "El campo active es obligatorio." });
+        return validationError(res, { active: "El campo active es obligatorio." });
     }
 
     const row = db

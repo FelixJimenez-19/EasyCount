@@ -14,3 +14,4 @@ declare module "*.sql" {
     const value: string;
     export default value;
 }
+declare const __DEV__: boolean;

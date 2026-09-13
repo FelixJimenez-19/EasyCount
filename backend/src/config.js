@@ -7,4 +7,5 @@ export const config = {
     HOST: process.env.HOST,
     jwtSecret: process.env.JWT_SECRET,
     jwtExpiresIn: process.env.JWT_EXPIRES_IN,
+    jwtRefreshExpiresIn: process.env.REFRESH_JWT_EXPIRES_IN ?? "30d",
 };

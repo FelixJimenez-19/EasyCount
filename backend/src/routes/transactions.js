@@ -1,17 +1,22 @@
 import { Router } from "express";
 import { db } from "../db.js";
 import { requireAuth } from "../middleware/auth.js";
+import { validationError } from "../validation.js";
 
 const router = Router();
 
 router.post("/", requireAuth, (req, res) => {
     const { total, observation, breakdown, clientId } = req.body || {};
 
+    const errors = {};
     if (typeof total !== "number") {
-        return res.status(400).json({ message: "El total es obligatorio." });
+        errors.total = "El total es obligatorio.";
     }
     if (!Array.isArray(breakdown)) {
-        return res.status(400).json({ message: "El desglose es obligatorio." });
+        errors.breakdown = "El desglose es obligatorio.";
+    }
+    if (Object.keys(errors).length > 0) {
+        return validationError(res, errors);
     }
 
     // Idempotencia: si la operación ya fue procesada con el mismo clientId, se devuelve la existente.

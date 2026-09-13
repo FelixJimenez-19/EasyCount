@@ -1,6 +1,6 @@
 import "@/global.css";
 import { useEffect, useState } from "react";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 import { AuthStore } from "@/src/services/auth-store";
 import { runMigrations } from "@/src/db/migrate";
@@ -10,6 +10,13 @@ export default function RootLayout() {
 
     useEffect(() => {
         Promise.all([AuthStore.hydrate(), runMigrations()]).finally(() => setReady(true));
+    }, []);
+
+    useEffect(() => {
+        const unsubscribe = AuthStore.onSessionExpired(() => {
+            router.replace("/login");
+        });
+        return unsubscribe;
     }, []);
 
     if (!ready) {

@@ -1,5 +1,5 @@
 import * as Network from "expo-network";
-import { ApiError, api } from "./api-client";
+import { api, isDomainError } from "./http/client";
 import { AuthStore } from "./auth-store";
 import { OperationsRepo, type PendingOperationRow } from "@/src/db/repositories/operations";
 import { TransactionsRepo } from "@/src/db/repositories/transactions";
@@ -38,9 +38,13 @@ async function processOp(op: PendingOperationRow): Promise<boolean> {
 
         return true;
     } catch (error) {
-        if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
-            return true;
+        if (isDomainError(error)) {
+            // Errores 4xx del cliente (excepto auth): la operación es inválida, se descarta.
+            if (error.kind === "server" && error.status !== undefined && error.status >= 400 && error.status < 500) {
+                return true;
+            }
         }
+        // Red, timeout, 5xx o auth: se reintenta con backoff.
         return false;
     }
 }

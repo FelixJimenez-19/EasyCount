@@ -46,13 +46,13 @@ function AppContent() {
     const screen = {
         conteo: <Home denominaciones={denominaciones} cantidades={cantidades} setCantidades={setCantidades} grandTotal={grandTotal} />,
         reportes: <ReportScreen />,
-        catalogo: <CatalogScreen denominaciones={denominaciones} />,
+        catalogo: <CatalogScreen denominaciones={denominaciones} onChange={setDenominaciones} />,
         acerca: <About />,
     }[activeTab];
 
     return (
-        <View className="flex items-center justify-center   min-h-screen bg-background pt-10   ">
-            <Header showReset={activeTab === "conteo" && hasValues} onReset={reset} />
+        <View className={`flex items-center justify-center min-h-screen bg-background ${activeTab === "conteo" ? "pt-10" : "pt-4"}`}>
+            {activeTab === "conteo" && <Header showReset={hasValues} onReset={reset} />}
             <View className="flex-1 overflow-hidden w-full   relative">{screen}</View>
 
             <View className="flex-row shrink-0 border-t w-full border-border bg-card backdrop-blur-md justify-between px-4 pb-5">

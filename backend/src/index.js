@@ -4,16 +4,20 @@ import { config } from "./config.js";
 import { db, seedDenominaciones } from "./db.js";
 import authRouter from "./routes/auth.js";
 import denominationsRouter from "./routes/denominations.js";
-import transactionsRouter from "./routes/transactions.js";
+import transactionsRouter, { UPLOADS_DIR } from "./routes/transactions.js";
 
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+// La evidencia fotográfica viaja en base64 dentro del JSON; se amplía el límite.
+app.use(express.json({ limit: "12mb" }));
 
 app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", service: "easycount-api", timestamp: new Date().toISOString() });
 });
+
+// Fotos de respaldo subidas con los cierres de caja.
+app.use("/api/uploads", express.static(UPLOADS_DIR));
 
 app.use("/api/auth", authRouter);
 app.use("/api/denominations", denominationsRouter);

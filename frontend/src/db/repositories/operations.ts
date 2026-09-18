@@ -1,7 +1,7 @@
-import { and, eq, isNull, lt, lte, or } from "drizzle-orm";
+import { and, eq, gte, isNull, lt, lte, or } from "drizzle-orm";
 import { db, schema } from "../client";
 
-export type PendingOperationType = "create_transaction" | "toggle_denomination";
+export type PendingOperationType = "create_transaction" | "delete_transaction" | "toggle_denomination";
 
 export interface PendingOperationRow {
     id: number;
@@ -55,6 +55,26 @@ export const OperationsRepo = {
         return rows.length;
     },
 
+    async listPendingToggles(): Promise<{ id_denomination: number; active: boolean }[]> {
+        const rows = await db
+            .select({ payload: schema.pendingOperation.payload })
+            .from(schema.pendingOperation)
+            .where(eq(schema.pendingOperation.type, "toggle_denomination"))
+            .orderBy(schema.pendingOperation.id);
+        return rows.map((r) => JSON.parse(r.payload) as { id_denomination: number; active: boolean });
+    },
+
+    async cancelCreateByClientId(clientId: string): Promise<void> {
+        await db
+            .delete(schema.pendingOperation)
+            .where(
+                and(
+                    eq(schema.pendingOperation.clientId, clientId),
+                    eq(schema.pendingOperation.type, "create_transaction")
+                )
+            );
+    },
+
     async markSuccess(clientId: string): Promise<void> {
         await db.delete(schema.pendingOperation).where(eq(schema.pendingOperation.clientId, clientId));
     },
@@ -71,6 +91,18 @@ export const OperationsRepo = {
             .update(schema.pendingOperation)
             .set({ attempts: 5, updatedAt: new Date().toISOString() })
             .where(eq(schema.pendingOperation.clientId, clientId));
+    },
+
+    /**
+     * Reactiva operaciones que quedaron agotadas. Necesario porque una caída
+     * de red podía consumir los intentos y dejar el cierre sin sincronizar
+     * para siempre; al arrancar se les da una nueva oportunidad.
+     */
+    async recoverExhausted(): Promise<void> {
+        await db
+            .update(schema.pendingOperation)
+            .set({ attempts: 0, nextRetryAt: null, updatedAt: new Date().toISOString() })
+            .where(gte(schema.pendingOperation.attempts, schema.pendingOperation.maxAttempts));
     },
 
     async clearAll(): Promise<void> {

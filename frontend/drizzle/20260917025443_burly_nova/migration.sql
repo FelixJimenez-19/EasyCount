@@ -1,0 +1,1 @@
+ALTER TABLE `transaction` ADD `evidence_uri` text;

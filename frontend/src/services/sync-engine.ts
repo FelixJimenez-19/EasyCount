@@ -3,6 +3,7 @@ import { api, isDomainError } from "./http/client";
 import { AuthStore } from "./auth-store";
 import { OperationsRepo, type PendingOperationRow } from "@/src/db/repositories/operations";
 import { TransactionsRepo } from "@/src/db/repositories/transactions";
+import { NotificationService } from "./notification-service";
 
 const BASE_MS = 1000;
 const MAX_MS = 30000;
@@ -13,7 +14,12 @@ let syncing = false;
 let retryTimer: ReturnType<typeof setTimeout> | null = null;
 let networkSubscription: { remove: () => void } | null = null;
 
-async function processOp(op: PendingOperationRow): Promise<boolean> {
+type OpResult =
+    | "success" // la operación llegó al servidor (o era inválida y se descartó)
+    | "offline" // no hay conexión: no se consumen intentos, se espera a la red
+    | "retry"; // 5xx, auth o error inesperado: se reintenta con backoff
+
+async function processOp(op: PendingOperationRow): Promise<OpResult> {
     try {
         const payload = JSON.parse(op.payload);
 
@@ -23,9 +29,15 @@ async function processOp(op: PendingOperationRow): Promise<boolean> {
                 total: payload.total,
                 observation: payload.observation,
                 breakdown: payload.breakdown,
+                evidence: payload.evidence ?? null,
             });
             await TransactionsRepo.markSyncedByClientId(payload.clientId);
-            return true;
+            return "success";
+        }
+
+        if (op.type === "delete_transaction") {
+            await api.delete(`/transactions/${encodeURIComponent(payload.clientId)}`);
+            return "success";
         }
 
         if (op.type === "toggle_denomination") {
@@ -33,34 +45,62 @@ async function processOp(op: PendingOperationRow): Promise<boolean> {
                 active: payload.active,
                 updatedAt: payload.updatedAt,
             });
-            return true;
+            return "success";
         }
 
-        return true;
+        return "success";
     } catch (error) {
         if (isDomainError(error)) {
+            // Sin conexión: no es un fallo de la operación, es la red. Se deja
+            // pendiente intacta y se reintenta cuando vuelva la conectividad.
+            if (error.kind === "network" || error.kind === "timeout") {
+                return "offline";
+            }
             // Errores 4xx del cliente (excepto auth): la operación es inválida, se descarta.
             if (error.kind === "server" && error.status !== undefined && error.status >= 400 && error.status < 500) {
-                return true;
+                return "success";
             }
         }
-        // Red, timeout, 5xx o auth: se reintenta con backoff.
-        return false;
+        // 5xx, auth o error inesperado: se reintenta con backoff.
+        return "retry";
     }
 }
 
 async function processQueue(): Promise<void> {
     if (syncing || !AuthStore.isLoggedIn()) return;
+
+    // Sin conexión no se intenta: se espera al listener de red para no
+    // consumir intentos de las operaciones pendientes.
+    try {
+        const state = await Network.getNetworkStateAsync();
+        if (!state.isConnected) {
+            scheduleRetry(MAX_MS);
+            return;
+        }
+    } catch {
+        // Si no se puede consultar la red, se intenta igualmente.
+    }
+
     syncing = true;
     try {
         const due = await OperationsRepo.listDue();
         let nextRetryAt: number | null = null;
+        let syncedTransactions = 0;
 
         for (const op of due) {
-            const ok = await processOp(op);
-            if (ok) {
+            const result = await processOp(op);
+            if (result === "success") {
                 await OperationsRepo.markSuccess(op.clientId);
+                if (op.type === "create_transaction") syncedTransactions += 1;
                 continue;
+            }
+
+            if (result === "offline") {
+                // La red cayó a mitad de la cola: se detiene el procesamiento y
+                // se reintenta al reconectar, sin gastar intentos.
+                const retryAt = Date.now() + MAX_MS;
+                if (nextRetryAt === null || retryAt < nextRetryAt) nextRetryAt = retryAt;
+                break;
             }
 
             const attempts = op.attempts + 1;
@@ -77,6 +117,11 @@ async function processQueue(): Promise<void> {
 
         if (nextRetryAt !== null) {
             scheduleRetry(Math.max(0, nextRetryAt - Date.now()));
+        }
+
+        // Feedback nativo: avisar cuando los cierres pendientes llegaron al servidor.
+        if (syncedTransactions > 0) {
+            void NotificationService.notifySyncComplete(syncedTransactions);
         }
     } finally {
         syncing = false;
@@ -99,7 +144,8 @@ export const SyncEngine = {
                 processQueue();
             }
         });
-        processQueue();
+        // Recupera operaciones que hayan quedado agotadas por falta de red.
+        void OperationsRepo.recoverExhausted().then(() => processQueue());
     },
 
     stop(): void {

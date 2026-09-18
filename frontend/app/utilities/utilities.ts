@@ -16,6 +16,7 @@ export const mapTransactionRows = (rows: TransactionRow[]): Transaction[] => {
                 date: new Date(row.date),
                 total: row.total_general,
                 observation: row.observation,
+                evidence: row.evidence ?? null,
                 breakdown: [],
             });
         }

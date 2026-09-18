@@ -53,6 +53,10 @@ if (!hasColumn("transactionn", "client_id")) {
     db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_transactionn_client_id ON transactionn(client_id)");
 }
 
+if (!hasColumn("transactionn", "evidence_path")) {
+    db.exec("ALTER TABLE transactionn ADD COLUMN evidence_path VARCHAR(255) NULL");
+}
+
 if (!hasColumn("denomination", "updated_at")) {
     db.exec("ALTER TABLE denomination ADD COLUMN updated_at DATETIME NULL");
 }

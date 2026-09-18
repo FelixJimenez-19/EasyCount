@@ -7,6 +7,7 @@ export interface LocalTransactionInput {
     date: string;
     total: number;
     observation: string;
+    evidenceUri?: string | null;
     breakdown: TransactionBreakdown[];
 }
 
@@ -19,6 +20,7 @@ export const TransactionsRepo = {
                 date: input.date,
                 total: input.total,
                 observation: input.observation,
+                evidenceUri: input.evidenceUri ?? null,
                 synced: false,
                 createdAt: input.date,
             })
@@ -58,8 +60,23 @@ export const TransactionsRepo = {
             date: new Date(t.date),
             total: t.total,
             observation: t.observation ?? "",
+            evidence: t.evidenceUri ?? null,
             breakdown: byTransaction.get(t.id) ?? [],
         }));
+    },
+
+    async getLocal(id: number): Promise<{ clientId: string; synced: boolean } | null> {
+        const [row] = await db
+            .select({ clientId: schema.transaction.clientId, synced: schema.transaction.synced })
+            .from(schema.transaction)
+            .where(eq(schema.transaction.id, id))
+            .limit(1);
+        return row ?? null;
+    },
+
+    async deleteLocal(id: number): Promise<void> {
+        await db.delete(schema.transactionDenomination).where(eq(schema.transactionDenomination.transactionId, id));
+        await db.delete(schema.transaction).where(eq(schema.transaction.id, id));
     },
 
     async markSyncedByClientId(clientId: string): Promise<void> {
@@ -80,6 +97,7 @@ export const TransactionsRepo = {
                     date: t.date,
                     total: t.total,
                     observation: t.observation,
+                    evidenceUri: t.evidenceUri ?? null,
                     synced: true,
                     createdAt: t.date,
                 })

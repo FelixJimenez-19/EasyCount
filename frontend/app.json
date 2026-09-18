@@ -9,7 +9,12 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "EasyCount usa la cámara para adjuntar una foto de respaldo (recibo o arqueo) a tus cierres de caja.",
+        "NSPhotoLibraryUsageDescription": "EasyCount accede a tus fotos para que puedas adjuntar una imagen de respaldo a tus cierres de caja."
+      },
+      "bundleIdentifier": "com.anonymous.EasyCount"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +24,12 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.POST_NOTIFICATIONS"
+      ],
+      "package": "com.anonymous.EasyCount"
     },
     "web": {
       "output": "static",
@@ -40,7 +50,22 @@
         }
       ],
       "expo-secure-store",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          "color": "#4ade80",
+          "defaultChannel": "sync"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "EasyCount accede a tus fotos para adjuntar una imagen de respaldo a tus cierres de caja.",
+          "cameraPermission": "EasyCount usa la cámara para adjuntar una foto de respaldo (recibo o arqueo) a tus cierres de caja.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

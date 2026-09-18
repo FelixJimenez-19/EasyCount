@@ -1,40 +1,44 @@
 import { BookOpen, Info, LogOut, Mail } from "lucide-react-native";
 import { router } from "expo-router";
-import { Alert, Linking, Pressable, ScrollView, Text, View } from "react-native";
+import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import Logo from "./components/logo";
 import { UserService } from "@/src/services/user-service";
 import Button from "./components/buttons";
+import { useToast } from "./components/toast";
 
 const credits = [
     { label: "Desarrollado por", value: "Felix Jimenez Dev" },
     { label: "Plataforma", value: "Android " },
     { label: "Región", value: "Ecuador" },
 ];
-// Función encargada de disparar el enlace mailto
-const handleEmailPress = async () => {
-    const email = "fr.jimenezv@uea.edu.ec";
-    const subject = "Soporte Técnico - EasyCount";
-    const body = "Hola equipo de EasyCount,\n\nNecesito ayuda con...";
-
-    // Construimos la URL con los parámetros correspondientes
-    const url = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-    try {
-        // Verificamos si el dispositivo tiene alguna app de correo instalada
-        const supported = await Linking.canOpenURL(url);
-
-        if (supported) {
-            await Linking.openURL(url);
-        } else {
-            // Alerta en caso de que sea un emulador o no tenga app de correo
-            Alert.alert("Error", "No se encontró una aplicación de correo configurada en este dispositivo.");
-        }
-    } catch (error) {
-        Alert.alert("Error", "No se pudo abrir el correo electrónico." + error);
-    }
-};
 
 export default function About() {
+    const { show } = useToast();
+
+    // Función encargada de disparar el enlace mailto
+    const handleEmailPress = async () => {
+        const email = "fr.jimenezv@uea.edu.ec";
+        const subject = "Soporte Técnico - EasyCount";
+        const body = "Hola equipo de EasyCount,\n\nNecesito ayuda con...";
+
+        // Construimos la URL con los parámetros correspondientes
+        const url = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+        try {
+            // Verificamos si el dispositivo tiene alguna app de correo instalada
+            const supported = await Linking.canOpenURL(url);
+
+            if (supported) {
+                await Linking.openURL(url);
+            } else {
+                // Aviso en caso de que sea un emulador o no tenga app de correo
+                show("Error", "No se encontró una aplicación de correo configurada en este dispositivo.", { variant: "error" });
+            }
+        } catch (error) {
+            show("Error", "No se pudo abrir el correo electrónico." + error, { variant: "error" });
+        }
+    };
+
     return (
         <View className="flex-1 h-full bg-slate-900">
             <View className="px-5 pt-6 pb-4">

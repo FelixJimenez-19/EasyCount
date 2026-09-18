@@ -15,6 +15,7 @@ export const TransactionRowSchema = z.object({
     date: z.string(),
     total_general: z.number(),
     observation: z.string(),
+    evidence: z.string().nullable().optional(),
     id_denomination: z.number(),
     quantity: z.number(),
     subtotal: z.number(),
@@ -71,6 +72,7 @@ export const TransactionSchema = z.object({
     date: z.coerce.date(),
     total: z.number(),
     observation: z.string(),
+    evidence: z.string().nullable(),
     breakdown: z.array(TransactionItemSchema),
 });
 

@@ -2,11 +2,13 @@ import { UserService } from "@/src/services/user-service";
 import { router } from "expo-router";
 import { Eye, EyeOff, LogIn, Mail } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, Keyboard, Pressable, View } from "react-native";
+import { Keyboard, Pressable, View } from "react-native";
 import Button from "./buttons";
 import Input from "./input";
+import { useToast } from "./toast";
 
 export default function FormLogin() {
+    const { show } = useToast();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -16,7 +18,7 @@ export default function FormLogin() {
         Keyboard.dismiss();
         const trimmedEmail = email.trim();
         if (!trimmedEmail || !password) {
-            Alert.alert("Campos requeridos", "Por favor ingresa tu correo y contraseña.");
+            show("Campos requeridos", "Por favor ingresa tu correo y contraseña.", { variant: "error" });
             return;
         }
 
@@ -28,10 +30,10 @@ export default function FormLogin() {
             if (response.success) {
                 router.replace("/");
             } else {
-                Alert.alert("Error", response.message || "Error al iniciar sesión.");
+                show("Error", response.message || "Error al iniciar sesión.", { variant: "error" });
             }
         } catch {
-            Alert.alert("Error", "Ocurrió un error al procesar los datos.");
+            show("Error", "Ocurrió un error al procesar los datos.", { variant: "error" });
         } finally {
             setLoading(false);
         }

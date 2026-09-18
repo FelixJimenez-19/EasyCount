@@ -1,33 +1,54 @@
 import { CountService } from "@/src/services/count-service";
 import { BlurView } from "expo-blur";
-import { Plus, ToggleLeft, ToggleRight } from "lucide-react-native";
+import { Plus, Save, ToggleLeft, ToggleRight } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Alert, Keyboard, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Keyboard, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import CatalogSection from "./catalog-section";
 import { Denomination } from "./types/models";
 import Button from "./components/buttons";
 import Input from "./components/input";
+import { useToast } from "./components/toast";
 // import { INITIAL_DENOMINATIONS } from "./utilities/utilities";
 
 interface catalogprops {
     denominaciones: Denomination[];
+    onChange?: (denoms: Denomination[]) => void;
 }
 
-export default function CatalogScreen({ denominaciones }: catalogprops) {
+export default function CatalogScreen({ denominaciones, onChange }: catalogprops) {
+    const { show } = useToast();
     const [denoms, setDenoms] = useState(denominaciones);
+    const [baseline, setBaseline] = useState(denominaciones);
+    const [saving, setSaving] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [newValue, setNewValue] = useState("");
     const [newType, setNewType] = useState<"Billete" | "Moneda">("Billete");
     const [newActive, setNewActive] = useState(true);
 
     const [keyboardHeight, setKeyboardHeight] = useState(0);
-    const toggle = async (id: number) => {
-        const denom = denoms.find((d) => d.id_denomination === id);
-        if (!denom) return;
-        const nextActive = !denom.active;
-        const persistido = await CountService.toggleDenominacion(id, nextActive);
-        if (!persistido) return;
-        setDenoms((prev) => prev.map((d) => (d.id_denomination === id ? { ...d, active: nextActive } : d)));
+    const toggle = (id: number) => {
+        setDenoms((prev) => prev.map((d) => (d.id_denomination === id ? { ...d, active: !d.active } : d)));
+    };
+
+    const pendingChanges = denoms.filter((d) => {
+        const original = baseline.find((b) => b.id_denomination === d.id_denomination);
+        return original && original.active !== d.active;
+    });
+
+    const guardar = async () => {
+        if (pendingChanges.length === 0 || saving) return;
+        setSaving(true);
+        const ok = await CountService.saveDenominaciones(
+            pendingChanges.map((d) => ({ id_denomination: d.id_denomination, active: d.active }))
+        );
+        setSaving(false);
+        if (!ok) {
+            show("Error", "No se pudieron guardar los cambios. Inténtalo de nuevo.", { variant: "error" });
+            return;
+        }
+        setBaseline(denoms);
+        onChange?.(denoms);
+        show("Guardado", "Las denominaciones se guardaron correctamente.", { variant: "success" });
     };
 
     useEffect(() => {
@@ -44,12 +65,15 @@ export default function CatalogScreen({ denominaciones }: catalogprops) {
         const val = parseFloat(newValue);
         if (isNaN(val)) return;
         if (val <= 0) {
-            Alert.alert("Valor inválido", "El valor de la denominación debe ser mayor a $0.00");
+            show("Valor inválido", "El valor de la denominación debe ser mayor a $0.00", { variant: "error" });
             return;
         }
         const nuevo = await CountService.addDenominacion(val, newType, newActive);
         if (!nuevo) return;
-        setDenoms((prev) => [...prev, nuevo]);
+        const updated = [...denoms, nuevo];
+        setDenoms(updated);
+        setBaseline((prev) => [...prev, nuevo]);
+        onChange?.(updated);
         setNewValue("");
         setNewActive(true);
         setShowAddModal(false);
@@ -74,6 +98,23 @@ export default function CatalogScreen({ denominaciones }: catalogprops) {
                 <CatalogSection title="Monedas" items={coins} onToggle={toggle} />
                 <View className="h-2" />
             </ScrollView>
+
+            <View className="px-4 pt-3 pb-4 border-t border-border bg-background">
+                {pendingChanges.length > 0 && (
+                    <Text className="text-xs text-muted-foreground text-center mb-2">
+                        {pendingChanges.length} {pendingChanges.length === 1 ? "cambio" : "cambios"} sin guardar
+                    </Text>
+                )}
+                <Button
+                    label={saving ? "Guardando..." : "Guardar"}
+                    variant="primary"
+                    size="lg"
+                    icon={Save}
+                    disabled={pendingChanges.length === 0 || saving}
+                    className={pendingChanges.length === 0 || saving ? "opacity-50" : ""}
+                    onPress={guardar}
+                />
+            </View>
 
             {showAddModal && (
                 <Modal visible={showAddModal} transparent animationType="slide" statusBarTranslucent onRequestClose={() => setShowAddModal(false)}>

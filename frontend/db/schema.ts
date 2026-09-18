@@ -23,6 +23,7 @@ export const transaction = sqliteTable(
         date: text("date").notNull(),
         total: real("total").notNull(),
         observation: text("observation"),
+        evidenceUri: text("evidence_uri"),
         synced: integer("synced", { mode: "boolean" }).notNull().default(false),
         createdAt: text("created_at").notNull(),
     },

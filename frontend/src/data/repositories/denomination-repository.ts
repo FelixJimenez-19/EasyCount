@@ -15,6 +15,12 @@ export const DenominationRepository = {
         try {
             const data = await DenominationRemote.getAll();
             await DenominationsRepo.replaceAll(data);
+            const pending = await OperationsRepo.listPendingToggles();
+            for (const { id_denomination, active } of pending) {
+                const item = data.find((d) => d.id_denomination === id_denomination);
+                if (item) item.active = active;
+                await DenominationsRepo.toggleLocal(id_denomination, active);
+            }
             return data;
         } catch (error) {
             logger.warn("Falling back to local denominations:", error);
@@ -33,13 +39,15 @@ export const DenominationRepository = {
         }
     },
 
-    async toggle(id: number, active: boolean): Promise<boolean> {
-        await DenominationsRepo.toggleLocal(id, active);
-        await OperationsRepo.enqueue("toggle_denomination", newId(), {
-            id_denomination: id,
-            active,
-            updatedAt: new Date().toISOString(),
-        });
+    async saveToggles(updates: { id_denomination: number; active: boolean }[]): Promise<boolean> {
+        for (const update of updates) {
+            await DenominationsRepo.toggleLocal(update.id_denomination, update.active);
+            await OperationsRepo.enqueue("toggle_denomination", newId(), {
+                id_denomination: update.id_denomination,
+                active: update.active,
+                updatedAt: new Date().toISOString(),
+            });
+        }
         SyncEngine.kick();
         return true;
     },

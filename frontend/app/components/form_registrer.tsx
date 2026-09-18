@@ -2,11 +2,13 @@ import { UserService } from "@/src/services/user-service";
 import { router } from "expo-router";
 import { Eye, EyeOff, Mail, User as UserIcon, UserPlus } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, Keyboard, Pressable, View } from "react-native";
+import { Keyboard, Pressable, View } from "react-native";
 import Button from "./buttons";
 import Input from "./input";
+import { useToast } from "./toast";
 
 export default function FormRegistrer() {
+    const { show } = useToast();
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -20,17 +22,17 @@ export default function FormRegistrer() {
         const trimmedEmail = email.trim();
 
         if (!trimmedUsername || !trimmedEmail || !password || !confirmPassword) {
-            Alert.alert("Campos requeridos", "Por favor completa todos los campos.");
+            show("Campos requeridos", "Por favor completa todos los campos.", { variant: "error" });
             return;
         }
 
         if (password !== confirmPassword) {
-            Alert.alert("Error", "Las contraseñas no coinciden.");
+            show("Error", "Las contraseñas no coinciden.", { variant: "error" });
             return;
         }
 
         if (password.length < 6) {
-            Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres.");
+            show("Error", "La contraseña debe tener al menos 6 caracteres.", { variant: "error" });
             return;
         }
 
@@ -41,14 +43,16 @@ export default function FormRegistrer() {
 
             if (response.success) {
                 await UserService.logout();
-                Alert.alert("Registro exitoso", "Tu cuenta ha sido creada correctamente. Inicia sesión para continuar.", [
-                    { text: "Ir al Login", onPress: () => router.replace("/login") },
-                ]);
+                show("Registro exitoso", "Tu cuenta ha sido creada correctamente. Inicia sesión para continuar.", {
+                    variant: "success",
+                    duration: 4000,
+                });
+                router.replace("/login");
             } else {
-                Alert.alert("Error", response.message || "Error al registrar el usuario.");
+                show("Error", response.message || "Error al registrar el usuario.", { variant: "error" });
             }
         } catch {
-            Alert.alert("Error", "Ocurrió un error al procesar los datos.");
+            show("Error", "Ocurrió un error al procesar los datos.", { variant: "error" });
         } finally {
             setLoading(false);
         }

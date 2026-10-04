@@ -21,7 +21,7 @@ export default function Header({ showReset, onReset }: HeaderProps) {
             {showReset && (
                 <Pressable
                     onPress={onReset}
-                    className="flex flex-row items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-secondary text-muted-foreground text-xs font-medium hover:text-foreground transition-colors"
+                    className="flex flex-row items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-secondary text-foreground text-xs font-medium transition-colors"
                 >
                     <RotateCcw size={13} />
                     <Text>Reiniciar</Text>

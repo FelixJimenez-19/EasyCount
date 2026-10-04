@@ -365,7 +365,7 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                                 multiline
                                 placeholder="Ej: Cierre de caja matutino..."
                                 numberOfLines={3}
-                                className="w-full bg-secondary rounded-2xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground resize-none outline-none focus:ring-2 focus:ring-primary/40 border border-border"
+                                className="w-full bg-secondary rounded-2xl px-4 py-3 text-sm text-foreground placeholder:text-foreground/50 resize-none outline-none focus:ring-2 focus:ring-primary/40 border border-border"
                             />
 
                             <View className="pt-4">

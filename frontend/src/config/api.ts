@@ -15,8 +15,10 @@ const devUrl = `http://${getDevHost()}:${DEFAULT_PORT}/api`;
 
 const rawUrl = process.env.EXPO_PUBLIC_API_URL ?? (isDev ? devUrl : PROD_DEFAULT_URL);
 
-// Seguridad: en producción la API debe servirse por HTTPS.
-if (isProd && !rawUrl.startsWith("https://")) {
+// Seguridad: en producción la API debe servirse por HTTPS, salvo que se
+// habilite explícitamente HTTP para builds internos de demo.
+const allowInsecure = process.env.EXPO_PUBLIC_ALLOW_INSECURE_API === "1";
+if (isProd && !rawUrl.startsWith("https://") && !allowInsecure) {
     throw new Error("[EasyCount] La URL de la API en producción debe usar HTTPS.");
 }
 

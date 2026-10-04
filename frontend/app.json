@@ -14,7 +14,7 @@
         "NSCameraUsageDescription": "EasyCount usa la cámara para adjuntar una foto de respaldo (recibo o arqueo) a tus cierres de caja.",
         "NSPhotoLibraryUsageDescription": "EasyCount accede a tus fotos para que puedas adjuntar una imagen de respaldo a tus cierres de caja."
       },
-      "bundleIdentifier": "com.anonymous.EasyCount"
+      "bundleIdentifier": "com.felix.easycount"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,10 +29,10 @@
         "android.permission.CAMERA",
         "android.permission.POST_NOTIFICATIONS"
       ],
-      "package": "com.anonymous.EasyCount"
+      "package": "com.felix.easycount"
     },
     "web": {
-      "output": "static",
+      "output": "single",
       "favicon": "./assets/images/icon.png"
     },
     "plugins": [
@@ -65,11 +65,25 @@
           "cameraPermission": "EasyCount usa la cámara para adjuntar una foto de respaldo (recibo o arqueo) a tus cierres de caja.",
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7c1ea765-d85e-402b-a311-b65ed712cf27"
+      }
     }
   }
 }

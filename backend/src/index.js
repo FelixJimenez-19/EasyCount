@@ -12,6 +12,12 @@ app.use(cors());
 // La evidencia fotográfica viaja en base64 dentro del JSON; se amplía el límite.
 app.use(express.json({ limit: "12mb" }));
 
+// [DEBUG TEMPORAL] Registro de peticiones entrantes para diagnóstico de red.
+app.use((req, _res, next) => {
+    console.log(`[REQ] ${new Date().toISOString()} ${req.method} ${req.originalUrl} from ${req.ip}`);
+    next();
+});
+
 app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", service: "easycount-api", timestamp: new Date().toISOString() });
 });

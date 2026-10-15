@@ -45,9 +45,9 @@ const toState = (res: Notifications.NotificationPermissionsStatus): PermissionSt
 };
 
 /**
- * Las notificaciones de EasyCount son locales: se muestran cuando la cola
- * de salida termina de enviar los cierres al servidor (feedback del modelo
- * offline-first). No se envían notificaciones push remotas.
+ * Las notificaciones de EasyCount son locales: se muestran cuando el usuario
+ * guarda un cierre de caja, como confirmación del almacenamiento en el
+ * dispositivo. No se envían notificaciones push remotas.
  */
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -63,8 +63,8 @@ export const NotificationService = {
     async init(): Promise<void> {
         if (Platform.OS !== "android") return;
         await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-            name: "Sincronización",
-            description: "Avisos cuando tus cierres de caja se sincronizan con el servidor.",
+            name: "Cierres guardados",
+            description: "Avisos cuando guardas un cierre de caja.",
             importance: Notifications.AndroidImportance.DEFAULT,
         });
     },
@@ -93,20 +93,20 @@ export const NotificationService = {
         return toState(res);
     },
 
-    /** Avisa que la sincronización terminó. Sin permiso concedido no hace nada. */
-    async notifySyncComplete(count: number): Promise<void> {
+    /** Avisa que un cierre se guardó localmente. Sin permiso concedido no hace nada. */
+    async notifySaved(count = 1): Promise<void> {
         try {
             const state = await this.getPermissionState();
             if (state !== "granted") return;
             await Notifications.scheduleNotificationAsync({
                 content: {
-                    title: "Sincronización completada",
+                    title: "Cierre guardado",
                     body: count === 1 ? "Tu cierre se guardó correctamente." : `${count} cierres se guardaron correctamente.`,
                 },
                 trigger: null,
             });
         } catch (error) {
-            logger.warn("Error mostrando notificación de sincronización:", error);
+            logger.warn("Error mostrando notificación de guardado:", error);
         }
     },
 };

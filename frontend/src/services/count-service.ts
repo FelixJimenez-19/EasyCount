@@ -22,5 +22,4 @@ export const CountService = {
     ): Promise<boolean> => TransactionRepository.save(total, observacion, desgloses, evidence),
     getTransactions: (): Promise<Transaction[]> => TransactionRepository.list(),
     deleteTransaction: (id: string): Promise<boolean> => TransactionRepository.delete(id),
-    getLastSyncAt: (): Promise<Date | null> => TransactionRepository.lastSyncAt(),
 };

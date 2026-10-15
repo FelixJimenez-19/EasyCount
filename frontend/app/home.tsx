@@ -67,7 +67,7 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
     // ---------------------------------------------------------------
     // Notificaciones: solicitud en el momento de uso (al guardar),
     // precedida de una explicación. Estados según la guía:
-    // - concedido: se usa con normalidad (aviso tras sincronizar).
+    // - concedido: se usa con normalidad (aviso al guardar el cierre).
     // - restringido/no disponible: se oculta el flujo, sin error técnico.
     // - denegado: explicar motivo + botón "Volver a solicitar".
     // - denegación permanente: explicar + enlace a Ajustes del sistema.
@@ -104,7 +104,7 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
         }
         if (result === "granted") {
             setNotifPrompt(null);
-            show("Avisos activados", "Te avisaremos cuando tus cierres se sincronicen con el servidor.", { variant: "success" });
+            show("Avisos activados", "Te avisaremos cuando guardes un cierre.", { variant: "success" });
             setShowModal(true);
             return;
         }
@@ -216,6 +216,7 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
             setCantidades((prev) => Object.fromEntries(Object.keys(prev).map((key) => [Number(key), 0])));
             setSaved(true);
             setTimeout(() => setSaved(false), 2500);
+            void NotificationService.notifySaved();
         } else {
             show("Error", "Hubo un problema al intentar escribir en el almacenamiento del dispositivo.", { variant: "error" });
         }

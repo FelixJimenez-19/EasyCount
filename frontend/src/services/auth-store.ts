@@ -1,84 +1,60 @@
 import * as SecureStore from "expo-secure-store";
 import { logger } from "../utils/logger";
 
-const TOKEN_KEY = "easycount_token";
-const REFRESH_TOKEN_KEY = "easycount_refresh_token";
+const USER_ID_KEY = "easycount_current_user_id";
 
-let token: string | null = null;
-let refreshToken: string | null = null;
+let currentUserId: number | null = null;
 
 type SessionExpiredListener = () => void;
 const sessionExpiredListeners = new Set<SessionExpiredListener>();
 
+/**
+ * Sesión local: la app no usa tokens de servidor. Solo se recuerda, cifrado
+ * en SecureStore, el id del usuario con sesión iniciada en este dispositivo.
+ */
 export const AuthStore = {
-    getToken(): string | null {
-        return token;
-    },
-
-    getRefreshToken(): string | null {
-        return refreshToken;
+    getUserId(): number | null {
+        return currentUserId;
     },
 
     isLoggedIn(): boolean {
-        return token !== null;
+        return currentUserId !== null;
     },
 
     async hydrate(): Promise<void> {
         try {
-            [token, refreshToken] = await Promise.all([
-                SecureStore.getItemAsync(TOKEN_KEY),
-                SecureStore.getItemAsync(REFRESH_TOKEN_KEY),
-            ]);
+            const raw = await SecureStore.getItemAsync(USER_ID_KEY);
+            currentUserId = raw ? Number(raw) : null;
         } catch (error) {
             logger.error("Error hydrating auth store:", error);
-            token = null;
-            refreshToken = null;
+            currentUserId = null;
         }
     },
 
-    async setTokens(newToken: string, newRefreshToken: string): Promise<void> {
-        token = newToken;
-        refreshToken = newRefreshToken;
+    async setSession(userId: number): Promise<void> {
+        currentUserId = userId;
         try {
-            await Promise.all([
-                SecureStore.setItemAsync(TOKEN_KEY, newToken),
-                SecureStore.setItemAsync(REFRESH_TOKEN_KEY, newRefreshToken),
-            ]);
+            await SecureStore.setItemAsync(USER_ID_KEY, String(userId));
         } catch (error) {
-            logger.error("Error persisting tokens:", error);
-        }
-    },
-
-    async setToken(newToken: string): Promise<void> {
-        token = newToken;
-        try {
-            await SecureStore.setItemAsync(TOKEN_KEY, newToken);
-        } catch (error) {
-            logger.error("Error persisting token:", error);
+            logger.error("Error persisting session:", error);
         }
     },
 
     async clear(): Promise<void> {
-        token = null;
-        refreshToken = null;
+        currentUserId = null;
         try {
-            await Promise.all([
-                SecureStore.deleteItemAsync(TOKEN_KEY),
-                SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY),
-            ]);
+            await SecureStore.deleteItemAsync(USER_ID_KEY);
         } catch (error) {
-            logger.error("Error clearing tokens:", error);
+            logger.error("Error clearing session:", error);
         }
     },
 
     onSessionExpired(listener: SessionExpiredListener): () => void {
         sessionExpiredListeners.add(listener);
-        return () => {
-            sessionExpiredListeners.delete(listener);
-        };
+        return () => sessionExpiredListeners.delete(listener);
     },
 
     notifySessionExpired(): void {
-        for (const listener of sessionExpiredListeners) listener();
+        sessionExpiredListeners.forEach((listener) => listener());
     },
 };

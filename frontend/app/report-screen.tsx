@@ -1,6 +1,4 @@
 import { CountService } from "@/src/services/count-service";
-import { API_BASE_URL } from "@/src/config/api";
-import { useNetworkState } from "expo-network";
 import { CalendarDays, ChevronDown, ChevronUp, Search, SlidersHorizontal, Trash2, X } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
@@ -9,22 +7,8 @@ import { useToast } from "./components/toast";
 import { Transaction } from "./types/models";
 import { fmt, fmtDate } from "./utilities/utilities";
 
-const relativeTime = (d: Date): string => {
-    const sec = Math.floor((Date.now() - d.getTime()) / 1000);
-    if (sec < 60) return `hace ${sec} seg`;
-    const min = Math.floor(sec / 60);
-    if (min < 60) return `hace ${min} min`;
-    const hrs = Math.floor(min / 60);
-    if (hrs < 24) return `hace ${hrs} h`;
-    return `hace ${Math.floor(hrs / 24)} d`;
-};
-
-// La evidencia puede ser un archivo local (aún sin sincronizar) o una ruta del servidor.
-const evidenceUrl = (evidence: string): string => {
-    if (evidence.startsWith("file://")) return evidence;
-    if (evidence.startsWith("/")) return `${API_BASE_URL.replace(/\/api$/, "")}${evidence}`;
-    return evidence;
-};
+// La evidencia es siempre un archivo local guardado en el dispositivo.
+const evidenceUrl = (evidence: string): string => evidence;
 
 // Interpreta "AAAA-MM-DD" como el inicio del día en hora local.
 const startOfDay = (value: string): number | null => {
@@ -52,18 +36,14 @@ export default function ReportScreen() {
     const { show } = useToast();
     const [expanded, setExpanded] = useState<string | null>(null);
     const [history, setHistory] = useState<Transaction[]>([]);
-    const [lastSync, setLastSync] = useState<Date | null>(null);
     const [query, setQuery] = useState("");
     const [showFilters, setShowFilters] = useState(false);
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
-    const network = useNetworkState();
-    const offline = network.isConnected === false;
 
     const cargarHistorial = useCallback(async () => {
         const txns = await CountService.getTransactions();
         setHistory(txns);
-        setLastSync(await CountService.getLastSyncAt());
     }, []);
 
     useEffect(() => {
@@ -142,28 +122,12 @@ export default function ReportScreen() {
 
                 <View className="mt-3 flex-row items-center gap-x-2">
                     <View className="flex-1 min-w-0">
-                        {offline ? (
-                            <View className="self-start flex-row items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30">
-                                <View className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                                <Text className="text-[11px] font-medium text-amber-400" numberOfLines={1}>
-                                    Sin conexión · datos locales
-                                </Text>
-                            </View>
-                        ) : lastSync ? (
-                            <View className="self-start flex-row items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
-                                <View className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                <Text className="text-[11px] font-medium text-primary" numberOfLines={1}>
-                                    Actualizado {relativeTime(lastSync)}
-                                </Text>
-                            </View>
-                        ) : (
-                            <View className="self-start flex-row items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary/40">
-                                <View className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
-                                <Text className="text-[11px] font-medium text-muted-foreground" numberOfLines={1}>
-                                    Sin datos sincronizados aún
-                                </Text>
-                            </View>
-                        )}
+                        <View className="self-start flex-row items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
+                            <View className="w-1.5 h-1.5 rounded-full bg-primary" />
+                            <Text className="text-[11px] font-medium text-primary" numberOfLines={1}>
+                                Datos guardados en el dispositivo
+                            </Text>
+                        </View>
                     </View>
 
                     <View className="flex-row items-center bg-card border border-border rounded-xl px-2.5 h-9 w-36 gap-x-2">

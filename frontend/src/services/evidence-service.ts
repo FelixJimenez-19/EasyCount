@@ -7,10 +7,8 @@ import { mapPermissionResponse, type PermissionState } from "./permissions";
 export interface Evidence {
     /** URI local permanente (document/evidence/...) para mostrar la miniatura. */
     uri: string;
-    /** Nombre del archivo, usado también por el servidor. */
+    /** Nombre del archivo dentro del directorio de evidencias. */
     fileName: string;
-    /** Contenido codificado para enviarlo al backend en la sincronización. */
-    base64: string;
 }
 
 const evidenceDir = () => new Directory(Paths.document, "evidence");
@@ -23,14 +21,13 @@ const ensureDir = (): Directory => {
     return dir;
 };
 
-/** Copia la foto a almacenamiento persistente y obtiene su base64. */
+/** Copia la foto a almacenamiento persistente para conservarla en el dispositivo. */
 const persistAsset = async (asset: ImagePicker.ImagePickerAsset): Promise<Evidence> => {
     const ext = asset.mimeType === "image/png" ? ".png" : ".jpg";
     const fileName = `${newId()}${ext}`;
     const destination = new File(ensureDir(), fileName);
     new File(asset.uri).copy(destination);
-    const base64 = await destination.base64();
-    return { uri: destination.uri, fileName, base64 };
+    return { uri: destination.uri, fileName };
 };
 
 const launchCamera = async (): Promise<Evidence | null> => {

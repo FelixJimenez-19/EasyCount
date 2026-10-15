@@ -1,27 +1,35 @@
 import type { Denomination } from "../../models/denomination";
-import { DenominationRemote } from "../remote/denomination-remote";
 import { DenominationsRepo } from "../../db/repositories/denominations";
-import { OperationsRepo } from "../../db/repositories/operations";
-import { SyncEngine } from "../../services/sync-engine";
-import { newId } from "../../utils/id";
 import { logger } from "../../utils/logger";
 
 /**
- * Repositorio de denominaciones: oculta el origen de los datos a la capa de
- * estado. Combina fuente remota (API) + fuente local (SQLite) + cola de salida.
+ * Catálogo de denominaciones de Ecuador sembrado en el primer arranque.
+ * En modo local no hay fuente remota: la tabla SQLite es la única verdad.
+ */
+const SEED: { value: number; type: string }[] = [
+    { value: 0.01, type: "Moneda" },
+    { value: 0.05, type: "Moneda" },
+    { value: 0.1, type: "Moneda" },
+    { value: 0.25, type: "Moneda" },
+    { value: 0.5, type: "Moneda" },
+    { value: 1.0, type: "Moneda" },
+    { value: 1.0, type: "Billete" },
+    { value: 5.0, type: "Billete" },
+    { value: 10.0, type: "Billete" },
+    { value: 20.0, type: "Billete" },
+    { value: 50.0, type: "Billete" },
+    { value: 100.0, type: "Billete" },
+];
+
+/**
+ * Repositorio de denominaciones en modo local: siembra el catálogo la primera
+ * vez y opera siempre contra SQLite.
  */
 export const DenominationRepository = {
     async list(): Promise<Denomination[]> {
         try {
-            const data = await DenominationRemote.getAll();
-            await DenominationsRepo.replaceAll(data);
-            const pending = await OperationsRepo.listPendingToggles();
-            for (const { id_denomination, active } of pending) {
-                const item = data.find((d) => d.id_denomination === id_denomination);
-                if (item) item.active = active;
-                await DenominationsRepo.toggleLocal(id_denomination, active);
-            }
-            return data;
+            await DenominationsRepo.seedIfEmpty(SEED);
+            return await DenominationsRepo.getAll();
         } catch (error) {
             logger.warn("Falling back to local denominations:", error);
             return DenominationsRepo.getAll();
@@ -30,9 +38,7 @@ export const DenominationRepository = {
 
     async create(value: number, type: string, active: boolean): Promise<Denomination | null> {
         try {
-            const created = await DenominationRemote.create(value, type, active);
-            await DenominationsRepo.replaceAll(await DenominationRemote.getAll());
-            return created;
+            return await DenominationsRepo.createLocal(value, type, active);
         } catch (error) {
             logger.error("Error adding denomination:", error);
             return null;
@@ -42,13 +48,7 @@ export const DenominationRepository = {
     async saveToggles(updates: { id_denomination: number; active: boolean }[]): Promise<boolean> {
         for (const update of updates) {
             await DenominationsRepo.toggleLocal(update.id_denomination, update.active);
-            await OperationsRepo.enqueue("toggle_denomination", newId(), {
-                id_denomination: update.id_denomination,
-                active: update.active,
-                updatedAt: new Date().toISOString(),
-            });
         }
-        SyncEngine.kick();
         return true;
     },
 };

@@ -2,11 +2,13 @@ import { UserService } from "@/src/services/user-service";
 import { router } from "expo-router";
 import { Eye, EyeOff, Mail, User as UserIcon, UserPlus } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, Keyboard, Pressable, View } from "react-native";
+import { Keyboard, Pressable, View } from "react-native";
 import Button from "./buttons";
 import Input from "./input";
+import { useToast } from "./toast";
 
 export default function FormRegistrer() {
+    const toast = useToast();
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -20,17 +22,17 @@ export default function FormRegistrer() {
         const trimmedEmail = email.trim();
 
         if (!trimmedUsername || !trimmedEmail || !password || !confirmPassword) {
-            Alert.alert("Campos requeridos", "Por favor completa todos los campos.");
+            toast.error("Por favor completa todos los campos.");
             return;
         }
 
         if (password !== confirmPassword) {
-            Alert.alert("Error", "Las contraseñas no coinciden.");
+            toast.error("Las contraseñas no coinciden.");
             return;
         }
 
         if (password.length < 6) {
-            Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres.");
+            toast.error("La contraseña debe tener al menos 6 caracteres.");
             return;
         }
 
@@ -41,14 +43,13 @@ export default function FormRegistrer() {
 
             if (response.success) {
                 await UserService.logout();
-                Alert.alert("Registro exitoso", "Tu cuenta ha sido creada correctamente. Inicia sesión para continuar.", [
-                    { text: "Ir al Login", onPress: () => router.replace("/login") },
-                ]);
+                toast.success("Tu cuenta fue creada correctamente");
+                setTimeout(() => router.replace("/login"), 1200);
             } else {
-                Alert.alert("Error", response.message || "Error al registrar el usuario.");
+                toast.error(response.message || "Error al registrar el usuario.");
             }
         } catch {
-            Alert.alert("Error", "Ocurrió un error al procesar los datos.");
+            toast.error("Ocurrió un error al procesar los datos.");
         } finally {
             setLoading(false);
         }

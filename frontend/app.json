@@ -31,15 +31,16 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/logo.png",
-          "imageWidth": 200,
+          "imageWidth": 180,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#0f172a",
           "dark": {
-            "backgroundColor": "#0b0f19"
+            "image": "./assets/images/logo.png",
+            "backgroundColor": "#0f172a"
           }
         }
       ],
-      "expo-secure-store"
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -2,19 +2,20 @@
 
 **EasyCount** es una aplicación móvil para automatizar el conteo de dinero físico y la gestión de caja. Con ella puedes contar billetes y monedas, calcular el total automáticamente, guardar cada arqueo y consultar el historial de cierres.
 
-Está compuesta por dos partes:
-
-- **App móvil** (React Native + Expo) — la interfaz que usas desde el teléfono.
-- **Backend propio** (Node.js + Express + SQLite + JWT) — una API REST que almacena los datos.
+La app funciona **100% en el dispositivo**: no necesita un servidor ni conexión a internet. Todos los datos (usuarios, denominaciones y arqueos) se guardan en una base de datos **SQLite local** dentro del propio teléfono mediante `expo-sqlite`.
 
 ```
-┌──────────────────┐         HTTP (JSON)          ┌──────────────────────┐
-│   App móvil      │  ─────────────────────────>  │  Backend (Express)   │
-│  Expo Go / RN    │      Authorization: Bearer   │  SQLite + JWT        │
-└──────────────────┘  <─────────────────────────  └──────────────────────┘
+┌──────────────────────────────┐
+│        App móvil (Expo)      │
+│  React Native + expo-router  │
+│  ┌────────────────────────┐  │
+│  │  SQLite local          │  │
+│  │  (easycount.db)        │  │
+│  └────────────────────────┘  │
+└──────────────────────────────┘
 ```
 
-> La app **no** usa una base de datos local: todo lo consume desde la API.
+> No hay backend ni API REST. La capa de servicios (`CountService`, `UserService`) habla directamente con SQLite.
 
 ---
 
@@ -27,11 +28,11 @@ Está compuesta por dos partes:
 | Git                   | cualquiera reciente | —           |
 | Expo Go (en el móvil) | SDK 54              | —           |
 
-No se requiere instalar una base de datos aparte: el backend usa **SQLite** (archivo local que se crea solo).
+No se requiere instalar una base de datos aparte: `expo-sqlite` crea y administra el archivo `easycount.db` en el almacenamiento de la app.
 
 ---
 
-## 🚀 Configuración del entorno (paso a paso)
+## 🚀 Levantar la app (paso a paso)
 
 ### 1. Clonar el repositorio
 
@@ -40,36 +41,7 @@ git clone <url-del-repositorio>
 cd EasyCount
 ```
 
-### 2. Levantar el backend (API)
-
-Abre una terminal y ejecuta:
-
-```bash
-cd backend
-npm install
-cp .env.example .env   # opcional: define PORT, JWT_SECRET y JWT_EXPIRES_IN
-npm start              # o npm run dev (reinicio automático)
-```
-
-Debes ver algo como:
-
-```
-EasyCount API escuchando en http://0.0.0.0:4000
-Health check: http://localhost:4000/api/health
-```
-
-**Verifica que funciona:**
-
-```bash
-curl http://localhost:4000/api/health
-# Respuesta esperada: {"status":"ok","service":"easycount-api","timestamp":"..."}
-```
-
-> La base de datos (`backend/easycount.db`) se crea sola en la primera ejecución y se siembra con las denominaciones de Ecuador.
-
-### 3. Levantar la app móvil (frontend)
-
-En **otra terminal** (deja el backend corriendo):
+### 2. Instalar dependencias y arrancar
 
 ```bash
 cd frontend
@@ -77,40 +49,36 @@ npm install
 npx expo start
 ```
 
-Escanea el **código QR** con la app **Expo Go** en tu celular.
+Escanea el **código QR** con la app **Expo Go** en tu celular (o presiona `a`/`i` para emulador).
+
+Al iniciar, la app crea automáticamente la base de datos y siembra las denominaciones de Ecuador si aún no existen.
 
 ---
 
-## 📱 Conectar el celular al backend
+## 💾 Cómo se guardan los datos
 
-La app detecta automáticamente la IP de tu PC en la red local (a través de `Constants.expoConfig.hostUri`) y apunta a `http://<IP-DE-TU-PC>:4000/api`.
+La base de datos se crea sola en la primera ejecución (`src/database/database.ts`) con las tablas:
 
-Para que esto funcione, asegúrate de que:
+| Tabla                     | Contenido                                  |
+| ------------------------- | ------------------------------------------ |
+| `denomination`            | Billetes y monedas (se siembran al inicio) |
+| `transactionn`            | Cada arqueo/conteo guardado                |
+| `transactionn_denomination` | Desglose de cada conteo                  |
+| `user`                    | Usuarios registrados                       |
+| `session`                 | Sesión activa (fila `id = 1`)              |
 
-1. **El celular y la PC estén en la misma red Wi-Fi.**
-2. El **backend esté corriendo** antes de abrir la app.
-3. El **puerto 4000 esté accesible** (si hay firewall, ábrelo).
+**Registro/Login:** el usuario se guarda localmente. La contraseña se almacena con hash **SHA-256** (`src/utilities/crypto.ts`) y la sesión se representa con una fila en `session`. No hay tokens JWT ni red.
 
-Puedes verificar la URL que está usando la app en la consola de Metro:
+### ⚠️ Importante sobre los datos
 
-```
-[EasyCount] API base URL: http://10.0.0.31:4000/api
-```
-
-### Usar una URL manual (opcional)
-
-Si el auto-detección no funciona (túnel, emulador, producción), fuerza la URL con una variable de entorno:
-
-```bash
-# desde el directorio frontend/
-EXPO_PUBLIC_API_URL=http://10.0.0.31:4000/api npx expo start
-```
+- Los datos viven **solo en el teléfono**. Si desinstalas la app, se **borran**.
+- No hay sincronización entre dispositivos: cada teléfono tiene su propia base.
+- Al compilar como **APK / build propio**, la base persiste entre actualizaciones de la app.
+- En **Expo Go**, la base vive dentro de Expo Go; se pierde si desinstalas Expo Go.
 
 ---
 
 ## 🧰 Stack y versiones
-
-**Frontend (app)**
 
 | Componente            | Versión          |
 | --------------------- | ---------------- |
@@ -118,46 +86,9 @@ EXPO_PUBLIC_API_URL=http://10.0.0.31:4000/api npx expo start
 | React Native          | 0.81.5           |
 | React                 | 19.1.0           |
 | expo-router           | ~6.0.23          |
+| expo-sqlite           | ~16.0.10         |
+| crypto-js             | ^4.2.0           |
 | NativeWind (Tailwind) | ^5.0.0-preview.4 |
-| expo-secure-store     | ~15.0.8          |
-
-**Backend** (más detalle en [`backend/README.md`](backend/README.md))
-
-| Componente     | Versión  |
-| -------------- | -------- |
-| Node.js        | v24.17.0 |
-| Express        | ^5.2.1   |
-| better-sqlite3 | ^13.0.3  |
-| jsonwebtoken   | ^9.0.3   |
-| bcryptjs       | ^3.0.3   |
-
----
-
-## 🔌 Endpoints que consume la app
-
-| Método | Ruta                     | Auth | Descripción                     |
-| ------ | ------------------------ | ---- | ------------------------------- |
-| POST   | `/api/auth/register`     | No   | Registro de usuario             |
-| POST   | `/api/auth/login`        | No   | Login (devuelve JWT)            |
-| GET    | `/api/auth/me`           | Sí   | Usuario autenticado             |
-| GET    | `/api/denominations`     | Sí   | Lista de denominaciones         |
-| POST   | `/api/denominations`     | Sí   | Crear denominación              |
-| PATCH  | `/api/denominations/:id` | Sí   | Activar/desactivar denominación |
-| GET    | `/api/transactions`      | Sí   | Historial de conteos            |
-| POST   | `/api/transactions`      | Sí   | Guardar conteo                  |
-
----
-
-## 🛠️ Solución de problemas
-
-| Problema                       | Causa probable                  | Solución                                  |
-| ------------------------------ | ------------------------------- | ----------------------------------------- |
-| `Network request failed`       | Backend no está corriendo       | Ejecuta `cd backend && npm start`         |
-| `Network request failed`       | Celular y PC en redes distintas | Conecta ambos a la misma Wi-Fi            |
-| `Network request failed`       | Firewall bloquea el puerto 4000 | Abre el puerto 4000 (ufw/firewall)        |
-| URL incorrecta en la app       | IP no detectada                 | Usa `EXPO_PUBLIC_API_URL=...` manualmente |
-| `401 No autorizado`            | Token ausente/expirado          | Vuelve a iniciar sesión                   |
-| `El correo ya está registrado` | Email duplicado                 | Usa otro correo o inicia sesión           |
 
 ---
 
@@ -165,23 +96,34 @@ EXPO_PUBLIC_API_URL=http://10.0.0.31:4000/api npx expo start
 
 ```
 EasyCount/
-├── frontend/                # App móvil (Expo + React Native)
-│   ├── app/                 # pantallas (expo-router) y componentes UI
-│   │   ├── _layout.tsx      # hidratación del token (SecureStore) y navegación
-│   │   ├── index.tsx        # tabs: conteo / reportes / catálogo / acerca
-│   │   ├── login.tsx, register.tsx
-│   │   ├── home.tsx, denomrow.tsx
-│   │   ├── report-screen.tsx
-│   │   ├── catalog-screen.tsx, catalog-section.tsx
-│   │   └── about.tsx
-│   ├── src/
-│   │   ├── config/api.ts        # resolución de la URL base de la API
-│   │   └── services/
-│   │       ├── api-client.ts    # fetch wrapper (agrega Bearer token, maneja errores)
-│   │       ├── auth-store.ts    # token JWT en memoria + SecureStore
-│   │       ├── user-service.ts  # auth contra la API
-│   │       └── count-service.ts # denominaciones y transacciones contra la API
-│   └── package.json             # dependencias y scripts del frontend
-└── backend/                 # API REST (Express + SQLite + JWT)
-    └── src/ (index, config, db, middleware, routes)
+└── frontend/                # App móvil (Expo + React Native)
+    ├── app/                 # pantallas (expo-router) y componentes UI
+    │   ├── _layout.tsx      # inicializa la base de datos antes de renderizar
+    │   ├── index.tsx        # tabs: conteo / reportes / catálogo / acerca
+    │   ├── login.tsx, register.tsx
+    │   ├── home.tsx, denomrow.tsx
+    │   ├── report-screen.tsx
+    │   ├── catalog-screen.tsx, catalog-section.tsx
+    │   └── about.tsx
+    ├── src/
+    │   ├── database/
+    │   │   └── database.ts       # conexión SQLite, tablas y seed
+    │   ├── services/
+    │   │   ├── count-service.ts  # denominaciones y transacciones (SQLite)
+    │   │   └── user-service.ts   # registro/login/sesión (SQLite)
+    │   └── utilities/
+    │       ├── crypto.ts         # hash de contraseñas (SHA-256)
+    │       └── cache.ts          # caché cache-aside para el catálogo
+    └── package.json
 ```
+
+---
+
+## 🛠️ Solución de problemas
+
+| Problema                        | Causa probable                          | Solución                                  |
+| ------------------------------- | --------------------------------------- | ----------------------------------------- |
+| Los datos no se guardan         | Error al abrir la BD                    | Revisa la consola de Metro en busca de `Error al iniciar la base de datos` |
+| `Sesión inválida` al abrir      | Sesión borrada tras reinstalar          | Vuelve a iniciar sesión                   |
+| `El correo ya está registrado`  | Email duplicado en la BD local          | Usa otro correo o inicia sesión           |
+| Quiero reiniciar la app limpia  | Necesitas borrar los datos              | Desinstala/reinstala la app (o limpia los datos desde Ajustes) |

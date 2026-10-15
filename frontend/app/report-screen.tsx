@@ -19,7 +19,7 @@ export default function ReportScreen() {
     }, [cargarHistorial]);
 
     return (
-        <View className="flex-1 px-4 w-full">
+        <View className="flex-1 px-4 w-full pt-6">
             <View className="pb-5">
                 <Text className="text-xl font-semibold text-foreground">Historial de Registros</Text>
                 <Text className="text-xs text-muted-foreground mt-1">{history.length} registros guardados</Text>

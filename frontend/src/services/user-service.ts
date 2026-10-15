@@ -1,47 +1,95 @@
 import { User } from "@/app/types/models";
-import { ApiError, api } from "./api-client";
-import { AuthStore } from "./auth-store";
-
-interface AuthResponse {
-    user: User;
-    token: string;
-}
+import { db } from "../database/database";
+import { CryptoUtil } from "../utilities/crypto";
 
 export const UserService = {
-    async register(username: string, email: string, password: string): Promise<{ success: boolean; user?: User; message?: string }> {
+    register(username: string, email: string, password: string): { success: boolean; user?: User; message?: string } {
         try {
-            const data = await api.post<AuthResponse>("/auth/register", { username, email, password });
-            await AuthStore.setToken(data.token);
-            return { success: true, user: data.user };
+            const existing = db.getFirstSync<{ id_user: number }>("SELECT id_user FROM user WHERE email = ?;", [email]);
+            if (existing) {
+                return { success: false, message: "El correo ya está registrado." };
+            }
+
+            const hashedPassword = CryptoUtil.hashPassword(password);
+            const now = new Date().toISOString();
+
+            const result = db.runSync("INSERT INTO user (username, email, password, created_at, updated_at) VALUES (?, ?, ?, ?, ?);", [
+                username,
+                email,
+                hashedPassword,
+                now,
+                now,
+            ]);
+
+            const user: User = {
+                id_user: result.lastInsertRowId,
+                username,
+                email,
+                created_at: now,
+            };
+
+            db.runSync("INSERT OR REPLACE INTO session (id, id_user) VALUES (1, ?);", [user.id_user]);
+
+            return { success: true, user };
         } catch (error) {
             console.error("Error registering user:", error);
-            return { success: false, message: error instanceof ApiError ? error.message : "Error al registrar el usuario." };
+            return { success: false, message: "Error al registrar el usuario." };
         }
     },
 
-    async login(email: string, password: string): Promise<{ success: boolean; user?: User; message?: string }> {
+    login(email: string, password: string): { success: boolean; user?: User; message?: string } {
         try {
-            const data = await api.post<AuthResponse>("/auth/login", { email, password });
-            await AuthStore.setToken(data.token);
-            return { success: true, user: data.user };
+            const row = db.getFirstSync<{ id_user: number; username: string; email: string; password: string; created_at: string }>(
+                "SELECT id_user, username, email, password, created_at FROM user WHERE email = ?;",
+                [email]
+            );
+
+            if (!row || !CryptoUtil.verifyPassword(password, row.password)) {
+                return { success: false, message: "Correo o contraseña incorrectos." };
+            }
+
+            const user: User = {
+                id_user: row.id_user,
+                username: row.username,
+                email: row.email,
+                created_at: row.created_at,
+            };
+
+            db.runSync("INSERT OR REPLACE INTO session (id, id_user) VALUES (1, ?);", [user.id_user]);
+
+            return { success: true, user };
         } catch (error) {
             console.error("Error logging in:", error);
-            return { success: false, message: error instanceof ApiError ? error.message : "Error al iniciar sesión." };
+            return { success: false, message: "Error al iniciar sesión." };
         }
     },
 
-    async getCurrentUser(): Promise<User | null> {
+    getCurrentUser(): User | null {
         try {
-            return await api.get<User>("/auth/me");
+            const row = db.getFirstSync<{ id_user: number; username: string; email: string; created_at: string }>(
+                `SELECT u.id_user, u.username, u.email, u.created_at
+                 FROM session s
+                 INNER JOIN user u ON s.id_user = u.id_user
+                 WHERE s.id = 1;`
+            );
+
+            if (!row) return null;
+
+            return {
+                id_user: row.id_user,
+                username: row.username,
+                email: row.email,
+                created_at: row.created_at,
+            };
         } catch (error) {
             console.error("Error getting current user:", error);
             return null;
         }
     },
 
-    async logout(): Promise<boolean> {
+    logout(): boolean {
         try {
-            await AuthStore.clear();
+            db.runSync("DELETE FROM session WHERE id = 1;");
             return true;
         } catch (error) {
             console.error("Error logging out:", error);
@@ -50,6 +98,12 @@ export const UserService = {
     },
 
     isLoggedIn(): boolean {
-        return AuthStore.isLoggedIn();
+        try {
+            const row = db.getFirstSync<{ id_user: number }>("SELECT id_user FROM session WHERE id = 1;");
+            return row !== null && row.id_user != null;
+        } catch (error) {
+            console.error("Error checking session:", error);
+            return false;
+        }
     },
 };

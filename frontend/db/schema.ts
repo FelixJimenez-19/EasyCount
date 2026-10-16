@@ -43,28 +43,3 @@ export const transactionDenomination = sqliteTable("transaction_denomination", {
     quantity: integer("quantity").notNull(),
     subtotal: real("subtotal").notNull(),
 });
-
-//   Cola de operaciones pendientes de sincronizar.
-//   Cada fila tiene un `clientId` único y un contador de reintentos.
-
-export const pendingOperation = sqliteTable(
-    "pending_operation",
-    {
-        id: integer("id").primaryKey({ autoIncrement: true }),
-        clientId: text("client_id").notNull().unique(),
-        type: text("type").notNull(),
-        payload: text("payload").notNull(),
-        attempts: integer("attempts").notNull().default(0),
-        maxAttempts: integer("max_attempts").notNull().default(5),
-        nextRetryAt: text("next_retry_at"),
-        createdAt: text("created_at").notNull(),
-        updatedAt: text("updated_at").notNull(),
-    },
-    (t) => [index("pending_operation_ready_idx").on(t.nextRetryAt)]
-);
-
-// onli metadatos
-export const syncMeta = sqliteTable("sync_meta", {
-    key: text("key").primaryKey(),
-    value: text("value").notNull(),
-});

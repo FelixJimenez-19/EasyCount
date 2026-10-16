@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Stack, router } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 import { AuthStore } from "@/src/services/auth-store";
-import { runMigrations } from "@/src/db/migrate";
+import { initDb } from "@/src/db/client";
 import { NotificationService } from "@/src/services/notification-service";
 import { ToastProvider, toastBus } from "./components/toast";
 
@@ -11,7 +11,7 @@ export default function RootLayout() {
     const [ready, setReady] = useState(false);
 
     useEffect(() => {
-        Promise.all([AuthStore.hydrate(), runMigrations(), NotificationService.init()]).finally(() => setReady(true));
+        Promise.all([AuthStore.hydrate(), initDb(), NotificationService.init()]).finally(() => setReady(true));
     }, []);
 
     useEffect(() => {

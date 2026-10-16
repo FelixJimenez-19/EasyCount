@@ -7,9 +7,8 @@ import Button from "./components/buttons";
 import { useToast } from "./components/toast";
 
 const credits = [
-    { label: "Desarrollado por", value: "Felix Jimenez Dev" },
+    { label: "Desarrollado por", value: "Felix Jimenez" },
     { label: "Plataforma", value: "Android " },
-    { label: "Región", value: "Ecuador" },
 ];
 
 export default function About() {
@@ -40,7 +39,7 @@ export default function About() {
     };
 
     return (
-        <View className="flex-1 h-full bg-slate-900">
+        <View className="flex-1 h-full bg-background">
             <View className="px-5 pt-6 pb-4">
                 <Text className="text-xl font-semibold text-foreground">Acerca de</Text>
                 <Text className="text-xs text-muted-foreground mt-1">Información de la aplicación</Text>

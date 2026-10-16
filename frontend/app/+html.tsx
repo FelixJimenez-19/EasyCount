@@ -10,7 +10,7 @@ export default function Root({ children }: PropsWithChildren) {
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
                 <meta
                     name="description"
-                    content="EasyCount: registra tus cierres de caja, lleva el control de billetes y monedas, y sincroniza tus conteos de forma simple y segura."
+                    content="EasyCount: registra tus cierres de caja y lleva el control de billetes y monedas de forma simple y segura, directo en tu dispositivo."
                 />
                 <meta name="theme-color" content="#0f172a" />
                 <ScrollViewStyleReset />

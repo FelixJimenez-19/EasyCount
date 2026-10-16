@@ -188,7 +188,7 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
         setCameraPrompt(result === "denied_permanently" ? "blocked" : "denied");
     };
 
-    // Acción de persistencia definitiva hacia el Backend local
+    // Acción de persistencia definitiva en el almacenamiento local
     const handleGuardarCierre = async () => {
         if (grandTotal === 0) {
             show("Conteo vacío", "No puedes guardar un conteo con saldo de $0.00", { variant: "error" });
@@ -284,13 +284,13 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                         <View className="w-12 h-12 rounded-2xl bg-primary/15 items-center justify-center mb-4">
                             <Bell size={22} color="#4ade80" />
                         </View>
-                        <Text className="text-base font-semibold text-foreground">Avisos de sincronización</Text>
+                        <Text className="text-base font-semibold text-foreground">Avisos</Text>
                         <Text className="text-sm text-muted-foreground mt-2 leading-relaxed">
                             {notifPrompt === "blocked"
-                                ? "Las notificaciones están desactivadas de forma permanente en los Ajustes del sistema. Ábrelos para activarlas, o continúa sin avisos: el estado de sincronización siempre estará disponible en Reportes."
+                                ? "Las notificaciones están desactivadas de forma permanente en los Ajustes del sistema. Ábrelos para activarlas, o continúa sin avisos: tus cierres siempre quedarán guardados en Reportes."
                                 : notifPrompt === "denied"
-                                  ? "Los avisos están desactivados. Sin ellos no recibirás confirmación cuando tus cierres se sincronicen con el servidor, aunque podrás ver el estado en Reportes."
-                                  : "EasyCount guarda tus cierres incluso sin conexión. Activa las notificaciones para avisarte cuando tus cierres se sincronicen con el servidor."}
+                                  ? "Los avisos están desactivados. Sin ellos no recibirás confirmación al guardar un cierre, aunque siempre podrás verlo en Reportes."
+                                  : "EasyCount guarda tus cierres en tu dispositivo. Activa las notificaciones para avisarte cada vez que guardes un cierre."}
                         </Text>
                         <View className="flex flex-col gap-2 mt-5">
                             {notifPrompt === "ask" && (
@@ -329,7 +329,7 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                                 ? "El acceso a la cámara está desactivado de forma permanente en los Ajustes del sistema. Ábrelos para activarlo, o elige una foto de la galería."
                                 : cameraPrompt === "denied"
                                   ? "El acceso a la cámara fue denegado. Sin él no puedes tomar una foto de respaldo de tu cierre; puedes volver a solicitarlo o elegir una foto de la galería. Si vuelves a denegar, el sistema no te preguntará más y deberás activarlo desde los Ajustes."
-                                  : "Para adjuntar una foto de respaldo (recibo o arqueo) a tu cierre, EasyCount necesita acceso a tu cámara. La foto se guarda junto con tu conteo y se envía al servidor cuando haya conexión."}
+                                  : "Para adjuntar una foto de respaldo (recibo o arqueo) a tu cierre, EasyCount necesita acceso a tu cámara. La foto se guarda junto con tu conteo en tu dispositivo."}
                         </Text>
                         <View className="flex flex-col gap-2 mt-5">
                             {cameraPrompt === "ask" && <Button label="Usar cámara" variant="primary" icon={Camera} onPress={useCamera} />}
@@ -378,7 +378,7 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                                         <Image source={{ uri: evidence.uri }} className="w-14 h-14 rounded-xl bg-background" />
                                         <View className="flex-1">
                                             <Text className="text-sm text-foreground font-medium">Foto adjuntada</Text>
-                                            <Text className="text-xs text-muted-foreground">Se guardará y sincronizará con tu cierre</Text>
+                                            <Text className="text-xs text-muted-foreground">Se guardará junto con tu cierre</Text>
                                         </View>
                                         <Pressable
                                             onPress={() => setEvidence(null)}

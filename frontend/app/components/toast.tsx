@@ -36,10 +36,20 @@ export const toastBus = {
     },
 };
 
+// Colores tomados de la paleta de la app (global.css) y aplicados de forma
+// explícita para que el aviso siempre se vea con los colores de la app,
+// independientemente de cómo resuelvan los tokens de NativeWind.
+const COLORS = {
+    surface: "#1e293b",
+    border: "rgba(255, 255, 255, 0.1)",
+    foreground: "#f1f5f9",
+    muted: "#94a3b8",
+};
+
 const VARIANTS: Record<ToastVariant, { icon: typeof Info; color: string; bubble: string }> = {
-    success: { icon: CheckCircle2, color: "#4ade80", bubble: "bg-primary/15" },
-    error: { icon: AlertCircle, color: "#f87171", bubble: "bg-destructive/15" },
-    info: { icon: Info, color: "#94a3b8", bubble: "bg-secondary" },
+    success: { icon: CheckCircle2, color: "#4ade80", bubble: "rgba(74, 222, 128, 0.15)" },
+    error: { icon: AlertCircle, color: "#f87171", bubble: "rgba(248, 113, 113, 0.15)" },
+    info: { icon: Info, color: "#94a3b8", bubble: "#334155" },
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -95,15 +105,30 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                     style={{ paddingTop: insets.top + 8 }}
                 >
                     <Animated.View
-                        style={{ opacity, transform: [{ translateY }] }}
-                        className="bg-card border border-border rounded-2xl px-4 py-3 flex-row items-center gap-3 shadow-lg shadow-black/40"
+                        style={{
+                            opacity,
+                            transform: [{ translateY }],
+                            backgroundColor: COLORS.surface,
+                            borderColor: COLORS.border,
+                            borderWidth: 1,
+                        }}
+                        className="rounded-2xl px-4 py-3 flex-row items-center gap-3 shadow-lg shadow-black/40"
                     >
-                        <View className={`w-9 h-9 rounded-xl items-center justify-center ${variant.bubble}`}>
+                        <View
+                            className="w-9 h-9 rounded-xl items-center justify-center"
+                            style={{ backgroundColor: variant.bubble }}
+                        >
                             <Icon size={18} color={variant.color} />
                         </View>
                         <View className="flex-1">
-                            <Text className="text-sm font-semibold text-foreground">{toast.title}</Text>
-                            {toast.message ? <Text className="text-xs text-muted-foreground mt-0.5">{toast.message}</Text> : null}
+                            <Text className="text-sm font-semibold" style={{ color: COLORS.foreground }}>
+                                {toast.title}
+                            </Text>
+                            {toast.message ? (
+                                <Text className="text-xs mt-0.5" style={{ color: COLORS.muted }}>
+                                    {toast.message}
+                                </Text>
+                            ) : null}
                         </View>
                         <Pressable onPress={hide} hitSlop={8} className="w-6 h-6 items-center justify-center active:opacity-60">
                             <X size={14} color="#94a3b8" />

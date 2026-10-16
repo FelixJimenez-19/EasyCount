@@ -87,7 +87,7 @@ export default function CatalogScreen({ denominaciones, onChange }: catalogprops
             <View className="px-5 pt-6 pb-4 flex flex-row items-center justify-between">
                 <View>
                     <Text className="text-xl font-semibold text-foreground">Catálogo</Text>
-                    <Text className="text-xs text-muted-foreground mt-1">Denominaciones activas · Ecuador</Text>
+                    <Text className="text-xs text-muted-foreground mt-1">Denominaciones activas</Text>
                 </View>
 
                 <Button label="Nueva" variant="primary" icon={Plus} onPress={() => setShowAddModal(true)} />

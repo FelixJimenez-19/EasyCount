@@ -16,7 +16,7 @@ export default function About() {
 
     // Función encargada de disparar el enlace mailto
     const handleEmailPress = async () => {
-        const email = "fr.jimenezv@uea.edu.ec";
+        const email = "feljimenez1998@gmail.com";
         const subject = "Soporte Técnico - EasyCount";
         const body = "Hola equipo de EasyCount,\n\nNecesito ayuda con...";
 
@@ -98,7 +98,7 @@ export default function About() {
                     </View>
                     <Pressable className="flex-1" onPress={handleEmailPress}>
                         <Text className="text-sm font-medium text-foreground">Soporte técnico</Text>
-                        <Text className="text-xs text-muted-foreground">fr.jimenezv@uea.edu.ec</Text>
+                        <Text className="text-xs text-muted-foreground">feljimenez1998@gmail.com</Text>
                     </Pressable>
                 </Pressable>
 

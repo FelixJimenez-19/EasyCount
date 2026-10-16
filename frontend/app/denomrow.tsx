@@ -1,7 +1,8 @@
 import { Denomination } from "@/app/types/models";
 import { fmt } from "@/app/utilities/utilities";
+import * as Haptics from "expo-haptics";
 import { Minus, Plus } from "lucide-react-native";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
 import Button from "./components/buttons";
 
 export default function DenomRow({
@@ -16,6 +17,12 @@ export default function DenomRow({
     onDirect: (id: number, val: string) => void;
 }) {
     const subtotal = denomination.value * qty;
+
+    const ajustar = (delta: number) => {
+        void Haptics.selectionAsync().catch(() => {});
+        onUpdate(denomination.id_denomination, delta);
+    };
+
     return (
         <View className="flex flex-row justify-between items-center gap-3 bg-card rounded-2xl px-4 py-3.5 shadow-sm shadow-black/20">
             <View className="w-16">
@@ -23,14 +30,14 @@ export default function DenomRow({
                 <Text className="text-[10px] text-muted-foreground mt-0.5 capitalize">{denomination.type}</Text>
             </View>
             <View className="flex-row flex items-center justify-between gap-2">
-                <Button icon={Minus} className="rounded-full w-4 h-8 bg-secondary" onPress={() => onUpdate(denomination.id_denomination, -1)} />
+                <Button icon={Minus} className="rounded-full w-4 h-8 bg-secondary" onPress={() => ajustar(-1)} />
                 <TextInput
                     keyboardType="numeric"
                     value={qty.toString()}
                     onChangeText={(number) => onDirect(denomination.id_denomination, number)}
                     className="border w-14  px-2 rounded-xl border-border bg-secondary text-sm font-semibold font-mono  text-foreground"
                 />
-                <Button icon={Plus} className="rounded-full w-8 h-8" onPress={() => onUpdate(denomination.id_denomination, 1)} />
+                <Button icon={Plus} className="rounded-full w-8 h-8" onPress={() => ajustar(1)} />
             </View>
             <View className="w-20 text-right">
                 <Text className={`text-sm font-bold font-mono ${subtotal > 0 ? "text-primary" : "text-muted-foreground"}`}>${fmt(subtotal)}</Text>

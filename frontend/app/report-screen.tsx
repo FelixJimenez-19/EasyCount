@@ -2,6 +2,7 @@ import { CountService } from "@/src/services/count-service";
 import { CalendarDays, ChevronDown, ChevronUp, Search, SlidersHorizontal, Trash2, X } from "lucide-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import Button from "./components/buttons";
 import { useToast } from "./components/toast";
 import { Transaction } from "./types/models";
@@ -221,8 +222,12 @@ export default function ReportScreen() {
                         </Text>
                     </View>
                 ) : (
-                    filtered.map((entry) => (
-                        <View key={entry.id_transaction} className="bg-card rounded-2xl shadow-sm w-full shadow-black/20 overflow-hidden">
+                    filtered.map((entry, index) => (
+                        <Animated.View
+                            key={entry.id_transaction}
+                            entering={FadeInDown.delay(Math.min(index, 8) * 40).duration(250)}
+                            className="bg-card rounded-2xl shadow-sm w-full shadow-black/20 overflow-hidden"
+                        >
                             <Pressable
                                 className="w-full p-4 flex-row items-center justify-between"
                                 onPress={() => setExpanded(expanded === entry.id_transaction ? null : entry.id_transaction)}
@@ -285,7 +290,7 @@ export default function ReportScreen() {
                                     </View>
                                 </View>
                             )}
-                        </View>
+                        </Animated.View>
                     ))
                 )}
             </ScrollView>

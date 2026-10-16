@@ -10,6 +10,7 @@ import DenomRow from "./denomrow";
 import { Denomination, TransactionBreakdown } from "./types/models";
 import { fmt } from "./utilities/utilities";
 import Button from "./components/buttons";
+import CountUp from "./components/count-up";
 import { useToast } from "./components/toast";
 
 interface HomeProps {
@@ -271,7 +272,9 @@ export default function Home({ denominaciones, cantidades, setCantidades, grandT
                 )}
                 <View className="flex flex-row items-baseline justify-between mb-3 px-1 ">
                     <Text className="text-sm text-muted-foreground font-medium">Total</Text>
-                    <Text className="text-3xl font-bold text-primary font-mono">${fmt(grandTotal)}</Text>
+                    <Text className="text-3xl font-bold text-primary font-mono">
+                        $<CountUp value={grandTotal} format={fmt} />
+                    </Text>
                 </View>
 
                 <Button label="Guardar Conteo" icon={Save} size="xl" onPress={openSaveModal} />

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db, schema } from "../client";
-import type { Denomination } from "@/app/types/models";
+import type { Denomination } from "@/src/models/models";
 
 const toModel = (r: typeof schema.denomination.$inferSelect): Denomination => ({
     id_denomination: r.id,

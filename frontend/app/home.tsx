@@ -7,11 +7,11 @@ import { Bell, Camera, Images, Save, X } from "lucide-react-native";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Image, Keyboard, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import DenomRow from "./denomrow";
-import { Denomination, TransactionBreakdown } from "./types/models";
-import { fmt } from "./utilities/utilities";
-import Button from "./components/buttons";
-import CountUp from "./components/count-up";
-import { useToast } from "./components/toast";
+import { Denomination, TransactionBreakdown } from "@/src/models/models";
+import { fmt } from "@/src/utilities/utilities";
+import Button from "@/src/components/buttons";
+import CountUp from "@/src/components/count-up";
+import { useToast } from "@/src/components/toast";
 
 interface HomeProps {
     denominaciones: Denomination[];

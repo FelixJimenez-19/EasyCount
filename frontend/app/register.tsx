@@ -2,7 +2,7 @@ import { UserService } from "@/src/services/user-service";
 import { Redirect, router } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { Keyboard, Pressable, Text, TouchableWithoutFeedback, View } from "react-native";
-import FormRegistrer from "./components/form_registrer";
+import FormRegistrer from "@/src/components/form_registrer";
 
 export default function RegisterScreen() {
     if (UserService.isLoggedIn()) {

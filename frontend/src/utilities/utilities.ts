@@ -1,5 +1,5 @@
 import { BookOpen, Calculator, FileText, Info, type LucideIcon } from "lucide-react-native";
-import { Tab, Transaction, TransactionRow } from "../types/models";
+import { Tab, Transaction, TransactionRow } from "@/src/models/models";
 
 export const fmt = (n: number) => n.toLocaleString("es-EC", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 

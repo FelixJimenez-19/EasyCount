@@ -4,11 +4,11 @@ import { Plus, Save, ToggleLeft, ToggleRight } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Keyboard, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import CatalogSection from "./catalog-section";
-import { Denomination } from "./types/models";
-import Button from "./components/buttons";
-import Input from "./components/input";
-import { useToast } from "./components/toast";
-// import { INITIAL_DENOMINATIONS } from "./utilities/utilities";
+import { Denomination } from "@/src/models/models";
+import Button from "@/src/components/buttons";
+import Input from "@/src/components/input";
+import { useToast } from "@/src/components/toast";
+// import { INITIAL_DENOMINATIONS } from "@/src/utilities/utilities";
 
 interface catalogprops {
     denominaciones: Denomination[];

@@ -1,6 +1,6 @@
 import { ToggleLeft, ToggleRight } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
-import { Denomination } from "./types/models";
+import { Denomination } from "@/src/models/models";
 
 export default function CatalogSection({ title, items, onToggle }: { title: string; items: Denomination[]; onToggle: (id: number) => void }) {
     return (

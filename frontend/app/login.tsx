@@ -1,7 +1,7 @@
 import { UserService } from "@/src/services/user-service";
 import { Redirect, router } from "expo-router";
 import { Keyboard, Pressable, Text, TouchableWithoutFeedback, View } from "react-native";
-import FormLogin from "./components/form_login";
+import FormLogin from "@/src/components/form_login";
 
 export default function LoginScreen() {
     if (UserService.isLoggedIn()) {

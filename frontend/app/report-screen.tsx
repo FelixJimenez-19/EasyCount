@@ -3,10 +3,10 @@ import { CalendarDays, ChevronDown, ChevronUp, Search, SlidersHorizontal, Trash2
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import Button from "./components/buttons";
-import { useToast } from "./components/toast";
-import { Transaction } from "./types/models";
-import { fmt, fmtDate } from "./utilities/utilities";
+import Button from "@/src/components/buttons";
+import { useToast } from "@/src/components/toast";
+import { Transaction } from "@/src/models/models";
+import { fmt, fmtDate } from "@/src/utilities/utilities";
 
 // La evidencia es siempre un archivo local guardado en el dispositivo.
 const evidenceUrl = (evidence: string): string => evidence;

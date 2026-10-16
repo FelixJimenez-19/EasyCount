@@ -1,9 +1,9 @@
-import { Denomination } from "@/app/types/models";
-import { fmt } from "@/app/utilities/utilities";
+import { Denomination } from "@/src/models/models";
+import { fmt } from "@/src/utilities/utilities";
 import * as Haptics from "expo-haptics";
 import { Minus, Plus } from "lucide-react-native";
 import { Text, TextInput, View } from "react-native";
-import Button from "./components/buttons";
+import Button from "@/src/components/buttons";
 
 export default function DenomRow({
     denomination,

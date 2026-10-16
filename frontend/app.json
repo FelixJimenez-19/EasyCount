@@ -8,6 +8,12 @@
     "scheme": "easycount",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/7c1ea765-d85e-402b-a311-b65ed712cf27"
+    },
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -18,9 +24,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#165439",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
@@ -65,14 +70,6 @@
           "photosPermission": "EasyCount accede a tus fotos para adjuntar una imagen de respaldo a tus cierres de caja.",
           "cameraPermission": "EasyCount usa la cámara para adjuntar una foto de respaldo (recibo o arqueo) a tus cierres de caja.",
           "microphonePermission": false
-        }
-      ],
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "usesCleartextTraffic": true
-          }
         }
       ]
     ],

@@ -1,10 +1,10 @@
 import { BookOpen, Info, LogOut, Mail } from "lucide-react-native";
 import { router } from "expo-router";
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
-import Logo from "./components/logo";
+import Logo from "@/src/components/logo";
 import { UserService } from "@/src/services/user-service";
-import Button from "./components/buttons";
-import { useToast } from "./components/toast";
+import Button from "@/src/components/buttons";
+import { useToast } from "@/src/components/toast";
 
 const credits = [
     { label: "Desarrollado por", value: "Felix Jimenez" },

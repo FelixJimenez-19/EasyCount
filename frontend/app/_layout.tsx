@@ -5,7 +5,7 @@ import { ActivityIndicator, View } from "react-native";
 import { AuthStore } from "@/src/services/auth-store";
 import { initDb } from "@/src/db/client";
 import { NotificationService } from "@/src/services/notification-service";
-import { ToastProvider, toastBus } from "./components/toast";
+import { ToastProvider, toastBus } from "@/src/components/toast";
 
 export default function RootLayout() {
     const [ready, setReady] = useState(false);

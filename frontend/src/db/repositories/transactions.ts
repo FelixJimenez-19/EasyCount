@@ -1,6 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 import { db, schema } from "../client";
-import type { Transaction, TransactionBreakdown } from "@/app/types/models";
+import type { Transaction, TransactionBreakdown } from "@/src/models/models";
 
 export interface LocalTransactionInput {
     clientId: string;

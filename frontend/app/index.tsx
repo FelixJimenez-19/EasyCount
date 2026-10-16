@@ -7,12 +7,12 @@ import { Redirect } from "expo-router";
 
 import { CountService } from "@/src/services/count-service";
 import { UserService } from "@/src/services/user-service";
-import Button from "./components/buttons";
-import Header from "./components/header";
+import Button from "@/src/components/buttons";
+import Header from "@/src/components/header";
 import Home from "./home";
 import ReportScreen from "./report-screen";
-import { Denomination, Tab } from "./types/models";
-import { TABS } from "./utilities/utilities";
+import { Denomination, Tab } from "@/src/models/models";
+import { TABS } from "@/src/utilities/utilities";
 
 export default function Index() {
     if (!UserService.isLoggedIn()) {
